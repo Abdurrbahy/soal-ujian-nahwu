@@ -9,9 +9,9 @@ export function cn(...inputs: ClassValue[]) {
  * Normalizes Arabic text for flexible matching in short answers.
  * Removes diacritics (tashkeel), normalizes hamza, alef maksura, and trims spaces.
  */
-export function normalizeArabic(text: string): string {
-  if (!text) return "";
-  return text
+export function normalizeArabic(text: unknown): string {
+  if (text === null || text === undefined) return "";
+  return String(text)
     .trim()
     // Remove Arabic diacritics (fathah, kasrah, dhammah, sukun, shaddah, tanwin)
     .replace(/[\u064B-\u0652\u0670]/g, "")
@@ -28,23 +28,26 @@ export function normalizeArabic(text: string): string {
 /**
  * Checks if student answer matches correct key or any accepted variant.
  */
-export function checkAnswerMatch(studentAnswer: string, key: string, acceptedVariants?: string[]): boolean {
-  if (!studentAnswer) return false;
-  const sNorm = normalizeArabic(studentAnswer);
-  const kNorm = normalizeArabic(key);
+export function checkAnswerMatch(studentAnswer: unknown, key: unknown, acceptedVariants?: unknown[]): boolean {
+  if (studentAnswer === null || studentAnswer === undefined) return false;
+  const sStr = String(studentAnswer);
+  const kStr = String(key || "");
 
-  if (sNorm === kNorm) return true;
+  const sNorm = normalizeArabic(sStr);
+  const kNorm = normalizeArabic(kStr);
 
-  if (acceptedVariants && acceptedVariants.length > 0) {
+  if (sNorm && sNorm === kNorm) return true;
+
+  if (Array.isArray(acceptedVariants) && acceptedVariants.length > 0) {
     for (const v of acceptedVariants) {
-      if (sNorm === normalizeArabic(v)) {
+      if (v !== undefined && v !== null && sNorm === normalizeArabic(v)) {
         return true;
       }
     }
   }
 
   // Also check without removing ta marbutah
-  const sStrict = studentAnswer.trim().replace(/[\u064B-\u0652\u0670]/g, "").replace(/\s+/g, " ");
-  const kStrict = key.trim().replace(/[\u064B-\u0652\u0670]/g, "").replace(/\s+/g, " ");
+  const sStrict = sStr.trim().replace(/[\u064B-\u0652\u0670]/g, "").replace(/\s+/g, " ");
+  const kStrict = kStr.trim().replace(/[\u064B-\u0652\u0670]/g, "").replace(/\s+/g, " ");
   return sStrict.toLowerCase() === kStrict.toLowerCase();
 }

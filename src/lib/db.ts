@@ -187,11 +187,11 @@ export async function getSubmissionById(id: string): Promise<Submission | null> 
 }
 
 // Mutex lock to strictly serialize writes in concurrent scenarios
-let writeMutex = Promise.resolve();
+let lockPromise = Promise.resolve();
 function withLock<T>(fn: () => Promise<T>): Promise<T> {
-  const result = writeMutex.then(fn, fn);
-  writeMutex = result.then(() => {}, () => {});
-  return result;
+  const next = lockPromise.then(() => fn(), () => fn());
+  lockPromise = next.then(() => {}, () => {});
+  return next;
 }
 
 export async function saveNewSubmission(data: {
@@ -214,10 +214,14 @@ export async function saveNewSubmission(data: {
     for (const q of QUESTIONS) {
       if (q.gradingType === "otomatis") {
         maxAutoScore += q.points;
-        const studentAns = data.answers[q.id];
+        const studentAns = data.answers ? data.answers[q.id] : undefined;
         if (studentAns && q.key) {
-          if (checkAnswerMatch(studentAns, q.key, q.acceptedVariants)) {
-            autoScore += q.points;
+          try {
+            if (checkAnswerMatch(studentAns, q.key, q.acceptedVariants)) {
+              autoScore += q.points;
+            }
+          } catch (e) {
+            console.error(`Error matching question ${q.id}:`, e);
           }
         }
       } else {
@@ -228,7 +232,7 @@ export async function saveNewSubmission(data: {
     const maxTotalScore = maxAutoScore + maxManualScore;
     const initialManualScore = 0;
     const initialTotalScore = autoScore + initialManualScore;
-    const percentage = Math.round((initialTotalScore / maxTotalScore) * 100);
+    const percentage = maxTotalScore > 0 ? Math.round((initialTotalScore / maxTotalScore) * 100) : 0;
 
     const submission: Submission = {
       id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -237,10 +241,10 @@ export async function saveNewSubmission(data: {
       studentSection: data.studentSection?.trim() || "",
       startedAt: data.startedAt,
       submittedAt: data.submittedAt,
-      durationSpentSec: data.durationSpentSec,
-      autoSubmitted: data.autoSubmitted,
+      durationSpentSec: isNaN(data.durationSpentSec) ? 0 : data.durationSpentSec,
+      autoSubmitted: Boolean(data.autoSubmitted),
       examVersion: "miyar-v1.0",
-      answers: data.answers,
+      answers: data.answers || {},
       autoScore,
       maxAutoScore,
       manualScore: initialManualScore,
@@ -249,7 +253,7 @@ export async function saveNewSubmission(data: {
       maxTotalScore,
       percentage,
       status: "menunggu_penilaian",
-      focusEvents: data.focusEvents || [],
+      focusEvents: Array.isArray(data.focusEvents) ? data.focusEvents : [],
       manualGrading: {},
     };
 
@@ -291,13 +295,20 @@ export async function saveNewSubmission(data: {
     }
 
     // 2. Local file persistence
-    await ensureDataDir();
-    const all = await getAllSubmissions();
-    all.unshift(submission);
     try {
-      const tmpFile = `${SUBMISSIONS_FILE}.tmp.${Date.now()}`;
-      await fs.writeFile(tmpFile, JSON.stringify(all, null, 2), "utf-8");
-      await fs.rename(tmpFile, SUBMISSIONS_FILE);
+      await ensureDataDir();
+      let all: Submission[] = [];
+      try {
+        const raw = await fs.readFile(SUBMISSIONS_FILE, "utf-8");
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          all = parsed;
+        }
+      } catch {
+        all = [];
+      }
+      all.unshift(submission);
+      await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify(all, null, 2), "utf-8");
     } catch (err) {
       console.error("Local file persist error:", err);
     }

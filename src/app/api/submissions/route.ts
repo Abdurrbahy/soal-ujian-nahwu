@@ -28,11 +28,15 @@ export async function POST(req: Request) {
       studentSection: body.studentSection || "",
       startedAt,
       submittedAt: new Date().toISOString(),
-      durationSpentSec,
+      durationSpentSec: isNaN(durationSpentSec) ? 0 : durationSpentSec,
       autoSubmitted: Boolean(body.autoSubmitted),
       answers: answers || {},
       focusEvents: body.focusEvents || [],
     });
+
+    if (!submission) {
+      throw new Error("Gagal membuat dan menyimpan rekaman ujian.");
+    }
 
     return NextResponse.json({
       success: true,
@@ -50,10 +54,23 @@ export async function POST(req: Request) {
         status: submission.status,
       },
     });
-  } catch (error) {
-    console.error("Error saving submission:", error);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    const stack = error instanceof Error ? error.stack : "";
+    console.error("Error saving submission:", errorMsg, stack);
+    
+    try {
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      await fs.writeFile(
+        path.join(process.cwd(), "submission_error.log"),
+        `Time: ${new Date().toISOString()}\nError: ${errorMsg}\nStack: ${stack}\n\n`,
+        { flag: "a" }
+      );
+    } catch {}
+
     return NextResponse.json(
-      { error: "Gagal menyimpan hasil ujian. Silakan coba lagi." },
+      { error: `Gagal menyimpan hasil ujian: ${errorMsg}` },
       { status: 500 }
     );
   }

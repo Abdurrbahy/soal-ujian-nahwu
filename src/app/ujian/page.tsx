@@ -15,6 +15,7 @@ import {
   Info,
   RotateCcw,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { QUESTIONS } from "@/data/questions";
 import { Question, FocusEventRecord } from "@/types/exam";
@@ -163,7 +164,7 @@ export default function ExamPage() {
         // Clean up storage
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         toast.success("Ujian berhasil dikirim!");
-        router.push(`/tanda-terima/${data.submission.id}`);
+        window.location.href = `/tanda-terima/${data.submission.id}`;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "Koneksi terganggu.";
         console.error("Submission failed:", err);
@@ -419,7 +420,32 @@ export default function ExamPage() {
   }
 
   // ==========================================
-  // STAGE 2: LAYAR UJIAN AKTIF
+  // STAGE 2: PENGIRIMAN SEDANG BERLANGSUNG
+  // ==========================================
+  if (stage === "submitting") {
+    return (
+      <div className="min-h-[75vh] flex flex-col items-center justify-center p-4">
+        <div className="p-8 max-w-md w-full bg-card rounded-2xl border border-border shadow-lg text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-800 dark:text-emerald-300 shadow-inner">
+            <Loader2 className="w-8 h-8 animate-spin" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-foreground">Sedang Mengirim Jawaban Ujian...</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Mohon menunggu dan jangan menutup halaman ini. Sistem sedang menyimpan jawaban 75 soal Anda ke database dan menghitung skor otomatis.
+            </p>
+          </div>
+          <div className="pt-2 flex items-center justify-center gap-2 text-xs text-emerald-800 font-medium">
+            <Sparkles className="w-4 h-4 animate-bounce" />
+            <span>Menyiapkan Lembar Bukti Tanda Terima...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // STAGE 3: LAYAR UJIAN AKTIF
   // ==========================================
   return (
     <div className="min-h-screen bg-muted/20 pb-20">
@@ -461,10 +487,14 @@ export default function ExamPage() {
             <Button
               size="sm"
               onClick={() => setIsSubmitDialogOpen(true)}
-              className="bg-emerald-800 hover:bg-emerald-900 text-white font-medium gap-1.5 shadow-sm"
+              className={`font-semibold gap-1.5 shadow-sm text-white transition-all ${
+                answeredCount === 75
+                  ? "bg-emerald-800 hover:bg-emerald-900 ring-2 ring-emerald-400 animate-pulse"
+                  : "bg-emerald-800 hover:bg-emerald-900"
+              }`}
             >
               <Send className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">Kirim Ujian</span>
+              <span>{answeredCount === 75 ? "Kirim Ujian (75 Selesai)" : "Kirim Ujian"}</span>
             </Button>
           </div>
         </div>
@@ -475,6 +505,36 @@ export default function ExamPage() {
 
       {/* Main Exam Content Area */}
       <div className="container mx-auto max-w-4xl px-4 py-6 sm:py-8 space-y-6">
+        {/* Banner: Seluruh 75 Soal Selesai Dijawab */}
+        {answeredCount === 75 && (
+          <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border-2 border-emerald-600 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <CheckCircle2 className="w-7 h-7 text-emerald-200" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-200/90 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 text-[11px] font-bold uppercase tracking-wider mb-1">
+                  <Sparkles className="w-3 h-3" /> 75 dari 75 Soal Selesai Terjawab
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                  Alhamdulillah, seluruh 75 soal telah selesai dijawab!
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Anda sudah mengisi semua nomor. Anda dapat meneliti kembali jawaban Anda atau langsung mengirimkan ujian sekarang.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="lg"
+              onClick={() => setIsSubmitDialogOpen(true)}
+              className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white font-bold gap-2 px-6 shadow-md shrink-0 py-6 text-sm"
+            >
+              <Send className="w-4 h-4" />
+              <span>Kirim Jawaban Sekarang</span>
+            </Button>
+          </div>
+        )}
+
         {/* Transparent Focus Notice Banner if triggered */}
         {focusNotice && (
           <Alert variant="amber" className="shadow-sm">
@@ -652,23 +712,36 @@ export default function ExamPage() {
               Soal {currentIndex + 1} dari 75
             </div>
 
-            {currentIndex < QUESTIONS.length - 1 ? (
-              <Button
-                onClick={() => setCurrentIndex((prev) => Math.min(QUESTIONS.length - 1, prev + 1))}
-                className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5"
-              >
-                <span>Berikutnya</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                onClick={() => setIsSubmitDialogOpen(true)}
-                className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow"
-              >
-                <Send className="w-4 h-4" />
-                <span>Kirim Jawaban</span>
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {answeredCount === 75 && currentIndex < QUESTIONS.length - 1 && (
+                <Button
+                  onClick={() => setIsSubmitDialogOpen(true)}
+                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow font-bold"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Kirim Ujian (75 Selesai)</span>
+                </Button>
+              )}
+
+              {currentIndex < QUESTIONS.length - 1 ? (
+                <Button
+                  variant={answeredCount === 75 ? "outline" : "default"}
+                  onClick={() => setCurrentIndex((prev) => Math.min(QUESTIONS.length - 1, prev + 1))}
+                  className={answeredCount === 75 ? "gap-1.5" : "bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5"}
+                >
+                  <span>Berikutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => setIsSubmitDialogOpen(true)}
+                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow font-bold"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Kirim Jawaban</span>
+                </Button>
+              )}
+            </div>
           </CardFooter>
         </Card>
 
@@ -688,14 +761,26 @@ export default function ExamPage() {
             </span>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsNavGridOpen(true)}
-            className="text-xs text-emerald-800 hover:text-emerald-900 font-medium h-7"
-          >
-            Buka Navigasi Grid (1–75)
-          </Button>
+          <div className="flex items-center gap-2">
+            {answeredCount === 75 && (
+              <Button
+                size="sm"
+                onClick={() => setIsSubmitDialogOpen(true)}
+                className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs h-7 gap-1"
+              >
+                <Send className="w-3 h-3" />
+                <span>Kirim Ujian</span>
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsNavGridOpen(true)}
+              className="text-xs text-emerald-800 hover:text-emerald-900 font-medium h-7"
+            >
+              Buka Navigasi Grid (1–75)
+            </Button>
+          </div>
         </div>
 
         {/* Connection or Submission Error */}
@@ -795,22 +880,44 @@ export default function ExamPage() {
             </div>
           </div>
 
-          {/* Legend */}
+          {/* Legend and Submit Actions */}
           <div className="border-t pt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" /> Terjawab
+                <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" /> Terjawab ({answeredCount})
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-amber-100 border border-amber-500" /> Ditandai
+                <div className="w-3 h-3 rounded bg-amber-100 border border-amber-500" /> Ditandai ({markedCount})
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-card border border-border" /> Belum
+                <div className="w-3 h-3 rounded bg-card border border-border" /> Belum ({unansweredCount})
               </span>
             </div>
-            <Button size="sm" variant="outline" onClick={() => setIsNavGridOpen(false)}>
-              Tutup
-            </Button>
+
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setIsNavGridOpen(false)}>
+                Tutup
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setIsNavGridOpen(false);
+                  setIsSubmitDialogOpen(true);
+                }}
+                className={`text-white font-bold gap-1.5 shadow-sm ${
+                  answeredCount === 75
+                    ? "bg-emerald-800 hover:bg-emerald-900 ring-2 ring-emerald-400"
+                    : "bg-emerald-800 hover:bg-emerald-900"
+                }`}
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>
+                  {answeredCount === 75
+                    ? "Kirim Ujian (75/75 Selesai)"
+                    : `Kirim Ujian (${answeredCount}/75)`}
+                </span>
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -865,7 +972,10 @@ export default function ExamPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Periksa Kembali</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => handleSubmitExam(false)}
+              onClick={() => {
+                setIsSubmitDialogOpen(false);
+                handleSubmitExam(false);
+              }}
               className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold"
             >
               Ya, Kirim Ujian

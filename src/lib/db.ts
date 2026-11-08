@@ -3,8 +3,9 @@ import path from "path";
 import { Submission, ManualGradeItem, FocusEventRecord, SubmissionStatus } from "@/types/exam";
 import { QUESTIONS } from "@/data/questions";
 import { checkAnswerMatch } from "@/lib/utils";
+import { getSupabase } from "@/lib/supabase";
 
-// In Vercel serverless environment, only /tmp is writable
+// In Vercel serverless environment, only /tmp is writable for file fallback
 const DATA_DIR = process.env.VERCEL
   ? path.join("/tmp", "miyar_data")
   : path.join(process.cwd(), "data");
@@ -26,45 +27,29 @@ const DEFAULT_SETTINGS: ExamSettings = {
   targetChapterMax: 26,
 };
 
-// Optional Cloud KV (Vercel KV / Upstash Redis) support via native fetch
-const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-
-async function kvGet<T>(key: string): Promise<T | null> {
-  if (!KV_URL || !KV_TOKEN) return null;
-  try {
-    const res = await fetch(`${KV_URL}/get/${key}`, {
-      headers: { Authorization: `Bearer ${KV_TOKEN}` },
-      cache: "no-store",
-    });
-    const json = await res.json();
-    if (json.result) {
-      return typeof json.result === "string" ? JSON.parse(json.result) : json.result;
-    }
-    return null;
-  } catch (e) {
-    console.error("KV get error:", e);
-    return null;
-  }
-}
-
-async function kvSet(key: string, val: unknown): Promise<boolean> {
-  if (!KV_URL || !KV_TOKEN) return false;
-  try {
-    const res = await fetch(`${KV_URL}/set/${key}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${KV_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(typeof val === "string" ? val : JSON.stringify(val)),
-      cache: "no-store",
-    });
-    return res.ok;
-  } catch (e) {
-    console.error("KV set error:", e);
-    return false;
-  }
+function rowToSubmission(row: Record<string, unknown>): Submission {
+  return {
+    id: String(row.id),
+    studentName: String(row.student_name),
+    studentClass: String(row.student_class),
+    studentSection: String(row.student_section || ""),
+    startedAt: String(row.started_at),
+    submittedAt: String(row.submitted_at),
+    durationSpentSec: Number(row.duration_spent_sec) || 0,
+    autoSubmitted: Boolean(row.auto_submitted),
+    examVersion: String(row.exam_version || "miyar-v1.0"),
+    answers: (row.answers as Record<number, string>) || {},
+    autoScore: Number(row.auto_score) || 0,
+    maxAutoScore: Number(row.max_auto_score) || 46,
+    manualScore: Number(row.manual_score) || 0,
+    maxManualScore: Number(row.max_manual_score) || 58,
+    totalScore: Number(row.total_score) || 0,
+    maxTotalScore: Number(row.max_total_score) || 104,
+    percentage: Number(row.percentage) || 0,
+    status: (row.status as SubmissionStatus) || "menunggu_penilaian",
+    focusEvents: (row.focus_events as FocusEventRecord[]) || [],
+    manualGrading: (row.manual_grading as Record<number, ManualGradeItem>) || {},
+  };
 }
 
 async function ensureDataDir() {
@@ -75,14 +60,33 @@ async function ensureDataDir() {
   }
 }
 
+// ----------------------------------------------------
+// EXAM SETTINGS
+// ----------------------------------------------------
 export async function getExamSettings(): Promise<ExamSettings> {
-  // 1. Try Cloud KV if configured
-  if (KV_URL && KV_TOKEN) {
-    const fromKv = await kvGet<ExamSettings>("miyar_settings");
-    if (fromKv) return fromKv;
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("exam_settings")
+        .select("*")
+        .eq("id", "default")
+        .maybeSingle();
+
+      if (!error && data) {
+        return {
+          durationMinutes: data.duration_minutes || DEFAULT_SETTINGS.durationMinutes,
+          examTitle: data.exam_title || DEFAULT_SETTINGS.examTitle,
+          targetChapterMin: data.target_chapter_min || DEFAULT_SETTINGS.targetChapterMin,
+          targetChapterMax: data.target_chapter_max || DEFAULT_SETTINGS.targetChapterMax,
+        };
+      }
+    } catch (e) {
+      console.error("Supabase getExamSettings error, falling back to local file:", e);
+    }
   }
 
-  // 2. Fallback to file storage
+  // Local File Fallback
   await ensureDataDir();
   try {
     const raw = await fs.readFile(SETTINGS_FILE, "utf-8");
@@ -97,10 +101,22 @@ export async function getExamSettings(): Promise<ExamSettings> {
 
 export async function updateExamSettings(settings: Partial<ExamSettings>): Promise<ExamSettings> {
   const current = await getExamSettings();
-  const updated = { ...current, ...settings };
+  const updated: ExamSettings = { ...current, ...settings };
 
-  if (KV_URL && KV_TOKEN) {
-    await kvSet("miyar_settings", updated);
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      await supabase.from("exam_settings").upsert({
+        id: "default",
+        duration_minutes: updated.durationMinutes,
+        exam_title: updated.examTitle,
+        target_chapter_min: updated.targetChapterMin,
+        target_chapter_max: updated.targetChapterMax,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.error("Supabase updateExamSettings error:", e);
+    }
   }
 
   await ensureDataDir();
@@ -111,23 +127,36 @@ export async function updateExamSettings(settings: Partial<ExamSettings>): Promi
   return updated;
 }
 
+// ----------------------------------------------------
+// SUBMISSIONS
+// ----------------------------------------------------
 export async function getAllSubmissions(): Promise<Submission[]> {
-  // 1. Try Cloud KV if configured
-  if (KV_URL && KV_TOKEN) {
-    const fromKv = await kvGet<Submission[]>("miyar_submissions");
-    if (fromKv && Array.isArray(fromKv)) {
-      return fromKv.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("*")
+        .order("submitted_at", { ascending: false });
+
+      if (!error && data) {
+        return data.map(rowToSubmission);
+      }
+      if (error) {
+        console.error("Supabase getAllSubmissions error:", error);
+      }
+    } catch (e) {
+      console.error("Supabase error, falling back to local file:", e);
     }
   }
 
-  // 2. Fallback to file storage
+  // Local File Fallback
   await ensureDataDir();
   try {
     const raw = await fs.readFile(SUBMISSIONS_FILE, "utf-8");
     const data: Submission[] = JSON.parse(raw);
     return data.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
   } catch {
-    // Return empty array - NO DUMMY DATA
     try {
       await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify([], null, 2), "utf-8");
     } catch {}
@@ -136,11 +165,28 @@ export async function getAllSubmissions(): Promise<Submission[]> {
 }
 
 export async function getSubmissionById(id: string): Promise<Submission | null> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (!error && data) {
+        return rowToSubmission(data);
+      }
+    } catch (e) {
+      console.error("Supabase getSubmissionById error:", e);
+    }
+  }
+
   const all = await getAllSubmissions();
   return all.find((s) => s.id === id) || null;
 }
 
-// Mutex lock to strictly serialize writes and prevent concurrent race conditions
+// Mutex lock to strictly serialize writes in concurrent scenarios
 let writeMutex = Promise.resolve();
 function withLock<T>(fn: () => Promise<T>): Promise<T> {
   const result = writeMutex.then(fn, fn);
@@ -160,9 +206,6 @@ export async function saveNewSubmission(data: {
   focusEvents: FocusEventRecord[];
 }): Promise<Submission> {
   return withLock(async () => {
-    await ensureDataDir();
-    const all = await getAllSubmissions();
-
     // Calculate automatic scoring server-side
     let autoScore = 0;
     let maxAutoScore = 0;
@@ -210,8 +253,55 @@ export async function saveNewSubmission(data: {
       manualGrading: {},
     };
 
+    // 1. Insert into Supabase if configured
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        const { error } = await supabase.from("submissions").insert({
+          id: submission.id,
+          student_name: submission.studentName,
+          student_class: submission.studentClass,
+          student_section: submission.studentSection,
+          started_at: submission.startedAt,
+          submitted_at: submission.submittedAt,
+          duration_spent_sec: submission.durationSpentSec,
+          auto_submitted: submission.autoSubmitted,
+          exam_version: submission.examVersion,
+          answers: submission.answers,
+          auto_score: submission.autoScore,
+          max_auto_score: submission.maxAutoScore,
+          manual_score: submission.manualScore,
+          max_manual_score: submission.maxManualScore,
+          total_score: submission.totalScore,
+          max_total_score: submission.maxTotalScore,
+          percentage: submission.percentage,
+          status: submission.status,
+          focus_events: submission.focusEvents,
+          manual_grading: submission.manualGrading,
+        });
+
+        if (error) {
+          console.error("Supabase insert error:", error);
+        } else {
+          return submission;
+        }
+      } catch (e) {
+        console.error("Supabase insert exception, writing to local file:", e);
+      }
+    }
+
+    // 2. Local file persistence
+    await ensureDataDir();
+    const all = await getAllSubmissions();
     all.unshift(submission);
-    await persistSubmissions(all);
+    try {
+      const tmpFile = `${SUBMISSIONS_FILE}.tmp.${Date.now()}`;
+      await fs.writeFile(tmpFile, JSON.stringify(all, null, 2), "utf-8");
+      await fs.rename(tmpFile, SUBMISSIONS_FILE);
+    } catch (err) {
+      console.error("Local file persist error:", err);
+    }
+
     return submission;
   });
 }
@@ -221,11 +311,9 @@ export async function updateSubmissionGrading(
   grades: Record<number, ManualGradeItem>
 ): Promise<Submission | null> {
   return withLock(async () => {
-    const all = await getAllSubmissions();
-    const index = all.findIndex((s) => s.id === id);
-    if (index === -1) return null;
+    const current = await getSubmissionById(id);
+    if (!current) return null;
 
-    const current = all[index];
     const updatedManualGrading = { ...current.manualGrading, ...grades };
 
     // Calculate manual score
@@ -262,35 +350,69 @@ export async function updateSubmissionGrading(
       manualGrading: updatedManualGrading,
     };
 
-    all[index] = updatedSubmission;
-    await persistSubmissions(all);
+    // 1. Update in Supabase if configured
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from("submissions")
+          .update({
+            manual_score: updatedSubmission.manualScore,
+            total_score: updatedSubmission.totalScore,
+            percentage: updatedSubmission.percentage,
+            status: updatedSubmission.status,
+            manual_grading: updatedSubmission.manualGrading,
+          })
+          .eq("id", id);
+
+        if (!error) {
+          return updatedSubmission;
+        }
+      } catch (e) {
+        console.error("Supabase update error:", e);
+      }
+    }
+
+    // 2. Local file persistence
+    const all = await getAllSubmissions();
+    const idx = all.findIndex((s) => s.id === id);
+    if (idx !== -1) {
+      all[idx] = updatedSubmission;
+      try {
+        const tmpFile = `${SUBMISSIONS_FILE}.tmp.${Date.now()}`;
+        await fs.writeFile(tmpFile, JSON.stringify(all, null, 2), "utf-8");
+        await fs.rename(tmpFile, SUBMISSIONS_FILE);
+      } catch (err) {
+        console.error("Local file persist error:", err);
+      }
+    }
+
     return updatedSubmission;
   });
 }
 
 export async function deleteSubmission(id: string): Promise<boolean> {
   return withLock(async () => {
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        const { error } = await supabase.from("submissions").delete().eq("id", id);
+        if (!error) return true;
+      } catch (e) {
+        console.error("Supabase delete error:", e);
+      }
+    }
+
     const all = await getAllSubmissions();
     const filtered = all.filter((s) => s.id !== id);
     if (filtered.length === all.length) return false;
-    await persistSubmissions(filtered);
+
+    try {
+      const tmpFile = `${SUBMISSIONS_FILE}.tmp.${Date.now()}`;
+      await fs.writeFile(tmpFile, JSON.stringify(filtered, null, 2), "utf-8");
+      await fs.rename(tmpFile, SUBMISSIONS_FILE);
+    } catch {}
+
     return true;
   });
-}
-
-async function persistSubmissions(data: Submission[]) {
-  // 1. If Cloud KV is configured, write to Cloud KV
-  if (KV_URL && KV_TOKEN) {
-    await kvSet("miyar_submissions", data);
-  }
-
-  // 2. Also write to disk atomically
-  try {
-    await ensureDataDir();
-    const tmpFile = `${SUBMISSIONS_FILE}.tmp.${Date.now()}`;
-    await fs.writeFile(tmpFile, JSON.stringify(data, null, 2), "utf-8");
-    await fs.rename(tmpFile, SUBMISSIONS_FILE);
-  } catch (err) {
-    console.error("Local file persist error (expected on read-only serverless if KV is used):", err);
-  }
 }

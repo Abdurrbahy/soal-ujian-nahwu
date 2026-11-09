@@ -46,14 +46,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useExamMode } from "@/context/exam-mode-context";
 
 const LOCAL_STORAGE_KEY = "miyar_exam_session_v1";
 
 export default function ExamPage() {
   const router = useRouter();
+  const { setIsExamActive } = useExamMode();
 
   // State: Stage ('identity' | 'exam' | 'submitting')
   const [stage, setStage] = useState<"identity" | "exam" | "submitting">("identity");
+
+  // Sync active exam state with global Navbar & Footer
+  useEffect(() => {
+    const isRunning = stage === "exam" || stage === "submitting";
+    setIsExamActive(isRunning);
+    return () => {
+      setIsExamActive(false);
+    };
+  }, [stage, setIsExamActive]);
 
   // Student Identity
   const [studentName, setStudentName] = useState("");
@@ -301,13 +312,14 @@ export default function ExamPage() {
       return;
     }
     if (!studentClass.trim()) {
-      toast.error("Kelas/Rombel siswa wajib diisi.");
+      toast.error("Silakan pilih kelas Anda (Kelas 10, 11, atau 12).");
       return;
     }
 
     const now = new Date().toISOString();
     setStartedAt(now);
     setStage("exam");
+    setIsExamActive(true);
     toast.success("Ujian dimulai. Selamat mengerjakan!");
   };
 
@@ -376,31 +388,27 @@ export default function ExamPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="class" className="text-sm font-medium">
-                    Kelas / Rombel <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
+              <div className="space-y-2">
+                <Label htmlFor="class" className="text-sm font-medium">
+                  Kelas <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <select
                     id="class"
-                    placeholder="Contoh: 8A atau Kelas 2 Mutawassit"
                     value={studentClass}
                     onChange={(e) => setStudentClass(e.target.value)}
                     required
-                  />
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 transition-colors cursor-pointer"
+                  >
+                    <option value="" disabled>-- Pilih Kelas (10, 11, 12) --</option>
+                    <option value="Kelas 10">Kelas 10</option>
+                    <option value="Kelas 11">Kelas 11</option>
+                    <option value="Kelas 12">Kelas 12</option>
+                  </select>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="section" className="text-sm font-medium">
-                    Bagian / Seksi / Catatan <span className="text-xs text-muted-foreground font-normal">(Opsional)</span>
-                  </Label>
-                  <Input
-                    id="section"
-                    placeholder="Contoh: Putra / Reguler / Kloter 1"
-                    value={studentSection}
-                    onChange={(e) => setStudentSection(e.target.value)}
-                  />
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Pilih tingkat kelas Anda saat ini (Kelas 10, 11, atau 12).
+                </p>
               </div>
             </CardContent>
           </Card>

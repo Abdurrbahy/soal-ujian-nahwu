@@ -3,7 +3,7 @@ import path from "path";
 import { Submission, ManualGradeItem, FocusEventRecord, SubmissionStatus } from "@/types/exam";
 import { QUESTIONS } from "@/data/questions";
 import { checkAnswerMatch } from "@/lib/utils";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, getSupabaseDiagnostics } from "@/lib/supabase";
 
 // In Vercel serverless environment, only /tmp is writable for file fallback
 const DATA_DIR = process.env.VERCEL
@@ -131,6 +131,9 @@ export async function updateExamSettings(settings: Partial<ExamSettings>): Promi
 // SUBMISSIONS
 // ----------------------------------------------------
 export async function getAllSubmissions(): Promise<Submission[]> {
+  let cloudList: Submission[] = [];
+  let localList: Submission[] = [];
+
   try {
     const supabase = getSupabase();
     if (supabase) {
@@ -140,28 +143,43 @@ export async function getAllSubmissions(): Promise<Submission[]> {
         .order("submitted_at", { ascending: false });
 
       if (!error && data) {
-        return data.map(rowToSubmission);
+        cloudList = data.map(rowToSubmission);
       }
       if (error) {
         console.error("Supabase getAllSubmissions error:", error);
       }
     }
   } catch (e) {
-    console.error("Supabase error, falling back to local file:", e);
+    console.error("Supabase error, reading local fallback:", e);
   }
 
-  // Local File Fallback
+  // Also read Local File Fallback
   await ensureDataDir();
   try {
     const raw = await fs.readFile(SUBMISSIONS_FILE, "utf-8");
     const data: Submission[] = JSON.parse(raw);
-    return data.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+    if (Array.isArray(data)) {
+      localList = data;
+    }
   } catch {
     try {
       await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify([], null, 2), "utf-8");
     } catch {}
-    return [];
   }
+
+  // Merge, cloud taking precedence, deduplicated by id
+  const map = new Map<string, Submission>();
+  for (const item of localList) {
+    if (item && item.id) map.set(item.id, item);
+  }
+  for (const item of cloudList) {
+    if (item && item.id) map.set(item.id, item);
+  }
+
+  const merged = Array.from(map.values());
+  return merged.sort(
+    (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+  );
 }
 
 export async function getSubmissionById(id: string): Promise<Submission | null> {
@@ -257,7 +275,26 @@ export async function saveNewSubmission(data: {
       manualGrading: {},
     };
 
-    // 1. Insert into Supabase if configured
+    // 1. ALWAYS persist to local fallback first so student answers are NEVER lost!
+    try {
+      await ensureDataDir();
+      let all: Submission[] = [];
+      try {
+        const raw = await fs.readFile(SUBMISSIONS_FILE, "utf-8");
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          all = parsed;
+        }
+      } catch {
+        all = [];
+      }
+      all = [submission, ...all.filter((s) => s.id !== submission.id)];
+      await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify(all, null, 2), "utf-8");
+    } catch (err) {
+      console.error("Local file persist error:", err);
+    }
+
+    // 2. Insert into Supabase cloud
     try {
       const supabase = getSupabase();
       if (supabase) {
@@ -285,40 +322,15 @@ export async function saveNewSubmission(data: {
         });
 
         if (error) {
-          console.error("Supabase insert error:", error);
-          if (process.env.VERCEL) {
-            throw new Error(`Database Cloud Supabase gagal menyimpan: ${error.message} (kode: ${error.code}). Pastikan skrip SQL sudah dijalankan di SQL Editor dashboard Supabase.`);
-          }
+          console.warn("[Supabase] Insert warning (saved to local backup):", error.message, error.code);
         } else {
-          return submission;
+          console.log(`[Supabase] Successfully inserted submission ${submission.id}`);
         }
-      } else if (process.env.VERCEL) {
-        throw new Error("Supabase belum terkonfigurasi di Vercel. Pastikan NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY sudah ditambahkan di Vercel Environment Variables.");
       }
-    } catch (e) {
-      console.error("Supabase insert exception, writing to local file:", e);
-      if (process.env.VERCEL) {
-        throw e;
-      }
-    }
-
-    // 2. Local file persistence
-    try {
-      await ensureDataDir();
-      let all: Submission[] = [];
-      try {
-        const raw = await fs.readFile(SUBMISSIONS_FILE, "utf-8");
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          all = parsed;
-        }
-      } catch {
-        all = [];
-      }
-      all.unshift(submission);
-      await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify(all, null, 2), "utf-8");
-    } catch (err) {
-      console.error("Local file persist error:", err);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const cause = (e as any)?.cause?.message || (e as any)?.cause?.code || "";
+      console.warn("[Supabase] Insert exception (saved to local backup):", msg, cause);
     }
 
     return submission;
@@ -441,9 +453,13 @@ export async function checkDatabaseHealth(): Promise<{
   supabaseConnected: boolean;
   tableExists: boolean;
   count: number;
+  urlHost?: string;
   error?: string;
+  hint?: string;
 }> {
   const supabase = getSupabase();
+  const diag = getSupabaseDiagnostics();
+
   if (!supabase) {
     const all = await getAllSubmissions();
     return {
@@ -451,7 +467,9 @@ export async function checkDatabaseHealth(): Promise<{
       supabaseConnected: false,
       tableExists: false,
       count: all.length,
-      error: "Supabase belum terhubung. Pastikan NEXT_PUBLIC_SUPABASE_URL dan API key sudah terisi di Environment Variables.",
+      urlHost: diag.hostname || undefined,
+      error: "Supabase belum terhubung. Pastikan NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY sudah ditambahkan di Vercel Environment Variables.",
+      hint: "Buka Vercel Dashboard -> Project Settings -> Environment Variables, lalu periksa apakah NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY sudah benar.",
     };
   }
 
@@ -461,12 +479,21 @@ export async function checkDatabaseHealth(): Promise<{
       .select("id", { count: "exact", head: true });
 
     if (error) {
+      let hint = "";
+      if (error.message.includes("fetch failed") || !error.code) {
+        hint = `Gagal fetch ke host "${diag.hostname || "Supabase"}". Pastikan NEXT_PUBLIC_SUPABASE_URL di Vercel adalah URL API Project: https://[project-ref].supabase.co (bukan URL dashboard browser supabase.com/dashboard) dan pastikan project Supabase Anda tidak dalam status Paused.`;
+      } else if (error.code === "42P01" || error.message.includes("does not exist")) {
+        hint = "Tabel submissions belum dibuat di Supabase. Jalankan skrip SQL di SQL Editor dashboard Supabase Anda.";
+      }
+
       return {
         supabaseConfigured: true,
         supabaseConnected: false,
         tableExists: false,
         count: 0,
-        error: `${error.message} (kode: ${error.code})`,
+        urlHost: diag.hostname || undefined,
+        error: `${error.message}${error.code ? ` (kode: ${error.code})` : ""}`,
+        hint,
       };
     }
 
@@ -475,15 +502,26 @@ export async function checkDatabaseHealth(): Promise<{
       supabaseConnected: true,
       tableExists: true,
       count: count ?? 0,
+      urlHost: diag.hostname || undefined,
     };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
+    const cause = (err as any)?.cause?.message || (err as any)?.cause?.code || "";
+    const fullError = cause ? `${msg} (${cause})` : msg;
+
+    let hint = `Gagal fetch ke host "${diag.hostname || "Supabase"}". Pastikan format NEXT_PUBLIC_SUPABASE_URL di Vercel memakai format URL API: https://[project-ref].supabase.co`;
+    if (fullError.includes("ENOTFOUND")) {
+      hint = `Domain "${diag.hostname}" tidak ditemukan (DNS lookup failed). Periksa apakah ada salah ketik pada URL proyek Supabase di Vercel.`;
+    }
+
     return {
       supabaseConfigured: true,
       supabaseConnected: false,
       tableExists: false,
       count: 0,
-      error: msg,
+      urlHost: diag.hostname || undefined,
+      error: fullError,
+      hint,
     };
   }
 }

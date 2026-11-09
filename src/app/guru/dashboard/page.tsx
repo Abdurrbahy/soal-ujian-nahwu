@@ -115,7 +115,9 @@ export default function TeacherDashboardPage() {
     supabaseConnected: boolean;
     tableExists: boolean;
     count: number;
+    urlHost?: string;
     error?: string;
+    hint?: string;
   } | null>(null);
 
   // Filters & Search
@@ -345,19 +347,32 @@ export default function TeacherDashboardPage() {
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-sm sm:text-base font-bold text-amber-950">
-                    Tabel Database Belum Tersedia di Supabase
+                    Status Koneksi Database Cloud Supabase
                   </h3>
                   <Badge variant="outline" className="border-amber-400 text-amber-900 bg-amber-100 text-[11px]">
                     Diperlukan untuk Vercel
                   </Badge>
+                  {dbHealth.urlHost && (
+                    <span className="font-mono text-[10px] bg-white text-slate-700 px-1.5 py-0.5 rounded border border-amber-300">
+                      Host: {dbHealth.urlHost}
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs sm:text-sm text-amber-900/90 leading-relaxed">
-                  Platform berjalan di serverless Vercel. Agar jawaban siswa tidak hilang dan langsung muncul di dashboard guru, tabel <code className="font-semibold bg-amber-200/60 px-1 py-0.5 rounded">submissions</code> wajib dibuat di project Supabase Anda.
+                  Platform berjalan di serverless Vercel. Agar jawaban siswa langsung tersimpan permanen dan tampil di dashboard guru, pastikan URL Supabase valid dan tabel <code className="font-semibold bg-amber-200/60 px-1 py-0.5 rounded">submissions</code> sudah dibuat.
                 </p>
                 {dbHealth.error && (
-                  <p className="font-mono text-[11px] bg-white/80 text-amber-950 px-2.5 py-1.5 rounded border border-amber-300">
+                  <p className="font-mono text-[11px] bg-white/90 text-amber-950 px-2.5 py-1.5 rounded border border-amber-300">
                     Status: {dbHealth.error}
                   </p>
+                )}
+                {dbHealth.hint && (
+                  <div className="p-2.5 rounded-lg bg-amber-100/90 border border-amber-400/80 text-amber-950 text-xs space-y-1">
+                    <span className="font-bold flex items-center gap-1 text-amber-900">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-700" /> Solusi yang perlu dilakukan:
+                    </span>
+                    <p className="leading-relaxed">{dbHealth.hint}</p>
+                  </div>
                 )}
               </div>
             </div>

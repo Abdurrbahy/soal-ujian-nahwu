@@ -1,41 +1,103 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-function getNormalizedUrl(): string | null {
+export function getNormalizedUrl(): string | null {
   const raw = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   if (!raw) return null;
 
-  let url = raw.trim().replace(/^["']|["']$/g, "").trim();
+  // Strip quotes, spaces, zero-width characters, newlines
+  let url = raw
+    .replace(/[\u200B-\u200D\uFEFF\r\n]/g, "")
+    .trim()
+    .replace(/^["'\s]+|["'\s]+$/g, "")
+    .trim();
+
   if (!url) return null;
 
-  // Auto-prepend https:// if user pasted domain without scheme (e.g. "abcdefgh.supabase.co")
+  // 1. Detect Postgres Connection String (e.g. postgres://postgres:pw@db.xxxx.supabase.co:5432/postgres)
+  if (url.startsWith("postgres://") || url.startsWith("postgresql://")) {
+    const dbMatch =
+      url.match(/db\.([a-z0-9_-]+)\.supabase\.co/i) ||
+      url.match(/postgres\.([a-z0-9_-]+):/i) ||
+      url.match(/@([a-z0-9_-]+)\.supabase\.co/i);
+    if (dbMatch && dbMatch[1]) {
+      return `https://${dbMatch[1]}.supabase.co`;
+    }
+  }
+
+  // 2. Fix duplicated https:// or http://
+  url = url.replace(/^(https?:\/\/)+/i, "https://");
+
+  // 3. Auto-prepend https:// if scheme is missing (e.g. abcdefgh.supabase.co)
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     url = `https://${url}`;
   }
 
   try {
     const parsed = new URL(url);
-    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
-      return url;
+
+    // 4. Detect Supabase Dashboard URL (e.g. https://supabase.com/dashboard/project/abcdefghijklmnop)
+    if (parsed.hostname === "supabase.com" || parsed.hostname === "app.supabase.com") {
+      const projectMatch = parsed.pathname.match(/\/project\/([a-z0-9_-]+)/i);
+      if (projectMatch && projectMatch[1]) {
+        return `https://${projectMatch[1]}.supabase.co`;
+      }
     }
-  } catch {
-    console.warn(`[Supabase] Invalid URL provided in environment variable: "${raw}". Falling back to local storage.`);
+
+    // 5. Always use parsed.origin to strip trailing slashes, paths (/rest/v1), queries
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.origin;
+    }
+  } catch (err) {
+    console.warn(`[Supabase] Invalid URL provided: "${raw}". Error:`, err);
   }
 
   return null;
 }
 
-function getNormalizedKey(): string | null {
+export function getNormalizedKey(): string | null {
   const raw =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.SUPABASE_ANON_KEY;
   if (!raw) return null;
 
-  const key = raw.trim().replace(/^["']|["']$/g, "").trim();
+  const key = raw
+    .replace(/[\u200B-\u200D\uFEFF\r\n]/g, "")
+    .trim()
+    .replace(/^["'\s]+|["'\s]+$/g, "")
+    .trim();
+
   return key.length > 5 ? key : null;
 }
 
+export function getSupabaseDiagnostics() {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const normalized = getNormalizedUrl();
+  const key = getNormalizedKey();
+
+  let hostname = "";
+  try {
+    if (normalized) {
+      hostname = new URL(normalized).hostname;
+    }
+  } catch {}
+
+  return {
+    hasRawUrl: Boolean(raw),
+    rawUrlSample: raw
+      ? raw.length > 35
+        ? `${raw.substring(0, 18)}...${raw.substring(raw.length - 8)}`
+        : raw
+      : "(tidak disetel)",
+    normalizedUrl: normalized,
+    hostname,
+    hasKey: Boolean(key),
+    keyPrefix: key ? `${key.substring(0, 12)}...` : "(tidak disetel)",
+  };
+}
+
 let supabaseInstance: SupabaseClient | null = null;
+let lastUsedUrl: string | null = null;
 let hasLoggedInitError = false;
 
 export function getSupabase(): SupabaseClient | null {
@@ -46,7 +108,8 @@ export function getSupabase(): SupabaseClient | null {
     return null;
   }
 
-  if (!supabaseInstance) {
+  // If URL changed or instance not initialized yet
+  if (!supabaseInstance || lastUsedUrl !== supabaseUrl) {
     try {
       supabaseInstance = createClient(supabaseUrl, supabaseKey, {
         auth: {
@@ -54,6 +117,7 @@ export function getSupabase(): SupabaseClient | null {
           autoRefreshToken: false,
         },
       });
+      lastUsedUrl = supabaseUrl;
     } catch (err) {
       if (!hasLoggedInitError) {
         console.error("[Supabase] Failed to initialize client. Using local file fallback:", err);

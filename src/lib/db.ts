@@ -64,9 +64,9 @@ async function ensureDataDir() {
 // EXAM SETTINGS
 // ----------------------------------------------------
 export async function getExamSettings(): Promise<ExamSettings> {
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
+  try {
+    const supabase = getSupabase();
+    if (supabase) {
       const { data, error } = await supabase
         .from("exam_settings")
         .select("*")
@@ -81,9 +81,9 @@ export async function getExamSettings(): Promise<ExamSettings> {
           targetChapterMax: data.target_chapter_max || DEFAULT_SETTINGS.targetChapterMax,
         };
       }
-    } catch (e) {
-      console.error("Supabase getExamSettings error, falling back to local file:", e);
     }
+  } catch (e) {
+    console.error("Supabase getExamSettings error, falling back to local file:", e);
   }
 
   // Local File Fallback
@@ -103,9 +103,9 @@ export async function updateExamSettings(settings: Partial<ExamSettings>): Promi
   const current = await getExamSettings();
   const updated: ExamSettings = { ...current, ...settings };
 
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
+  try {
+    const supabase = getSupabase();
+    if (supabase) {
       await supabase.from("exam_settings").upsert({
         id: "default",
         duration_minutes: updated.durationMinutes,
@@ -114,9 +114,9 @@ export async function updateExamSettings(settings: Partial<ExamSettings>): Promi
         target_chapter_max: updated.targetChapterMax,
         updated_at: new Date().toISOString(),
       });
-    } catch (e) {
-      console.error("Supabase updateExamSettings error:", e);
     }
+  } catch (e) {
+    console.error("Supabase updateExamSettings error:", e);
   }
 
   await ensureDataDir();
@@ -131,9 +131,9 @@ export async function updateExamSettings(settings: Partial<ExamSettings>): Promi
 // SUBMISSIONS
 // ----------------------------------------------------
 export async function getAllSubmissions(): Promise<Submission[]> {
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
+  try {
+    const supabase = getSupabase();
+    if (supabase) {
       const { data, error } = await supabase
         .from("submissions")
         .select("*")
@@ -145,9 +145,9 @@ export async function getAllSubmissions(): Promise<Submission[]> {
       if (error) {
         console.error("Supabase getAllSubmissions error:", error);
       }
-    } catch (e) {
-      console.error("Supabase error, falling back to local file:", e);
     }
+  } catch (e) {
+    console.error("Supabase error, falling back to local file:", e);
   }
 
   // Local File Fallback
@@ -165,9 +165,9 @@ export async function getAllSubmissions(): Promise<Submission[]> {
 }
 
 export async function getSubmissionById(id: string): Promise<Submission | null> {
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
+  try {
+    const supabase = getSupabase();
+    if (supabase) {
       const { data, error } = await supabase
         .from("submissions")
         .select("*")
@@ -177,9 +177,9 @@ export async function getSubmissionById(id: string): Promise<Submission | null> 
       if (!error && data) {
         return rowToSubmission(data);
       }
-    } catch (e) {
-      console.error("Supabase getSubmissionById error:", e);
     }
+  } catch (e) {
+    console.error("Supabase getSubmissionById error:", e);
   }
 
   const all = await getAllSubmissions();
@@ -258,9 +258,9 @@ export async function saveNewSubmission(data: {
     };
 
     // 1. Insert into Supabase if configured
-    const supabase = getSupabase();
-    if (supabase) {
-      try {
+    try {
+      const supabase = getSupabase();
+      if (supabase) {
         const { error } = await supabase.from("submissions").insert({
           id: submission.id,
           student_name: submission.studentName,
@@ -289,9 +289,9 @@ export async function saveNewSubmission(data: {
         } else {
           return submission;
         }
-      } catch (e) {
-        console.error("Supabase insert exception, writing to local file:", e);
       }
+    } catch (e) {
+      console.error("Supabase insert exception, writing to local file:", e);
     }
 
     // 2. Local file persistence
@@ -362,9 +362,9 @@ export async function updateSubmissionGrading(
     };
 
     // 1. Update in Supabase if configured
-    const supabase = getSupabase();
-    if (supabase) {
-      try {
+    try {
+      const supabase = getSupabase();
+      if (supabase) {
         const { error } = await supabase
           .from("submissions")
           .update({
@@ -379,9 +379,9 @@ export async function updateSubmissionGrading(
         if (!error) {
           return updatedSubmission;
         }
-      } catch (e) {
-        console.error("Supabase update error:", e);
       }
+    } catch (e) {
+      console.error("Supabase update error:", e);
     }
 
     // 2. Local file persistence

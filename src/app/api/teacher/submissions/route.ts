@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllSubmissions, getSubmissionById, deleteSubmission } from "@/lib/db";
+import { getAllSubmissions, getSubmissionById, deleteSubmission, checkDatabaseHealth } from "@/lib/db";
 import { isTeacherAuthenticated } from "@/lib/auth";
 
 export async function GET(req: Request) {
@@ -21,7 +21,8 @@ export async function GET(req: Request) {
     }
 
     const submissions = await getAllSubmissions();
-    return NextResponse.json({ submissions });
+    const dbHealth = await checkDatabaseHealth();
+    return NextResponse.json({ submissions, dbHealth });
   } catch (error) {
     console.error("Error fetching teacher submissions:", error);
     return NextResponse.json({ error: "Gagal memuat data percobaan." }, { status: 500 });

@@ -11,6 +11,7 @@ import {
   ShieldAlert,
   FileText,
   AlertTriangle,
+  AlertCircle,
   Award,
   Filter,
   Check,
@@ -132,11 +133,26 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
 
   if (!submission) {
     return (
-      <div className="container mx-auto max-w-md px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold">Data Tidak Ditemukan</h2>
-        <Link href="/guru/dashboard">
-          <Button variant="outline">Kembali ke Dashboard</Button>
-        </Link>
+      <div className="container mx-auto max-w-lg px-4 py-16 text-center space-y-5">
+        <div className="w-14 h-14 mx-auto rounded-full bg-amber-100 text-amber-800 flex items-center justify-center">
+          <AlertCircle className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-foreground">Data Jawaban Tidak Ditemukan</h2>
+          <p className="text-xs font-mono text-muted-foreground bg-muted px-2.5 py-1 rounded inline-block">
+            ID: {id}
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Lembar jawaban dengan ID ini belum tercatat di database cloud Supabase. Pastikan tabel <code className="bg-muted px-1.5 py-0.5 rounded text-foreground font-semibold">submissions</code> sudah dibuat di SQL Editor Supabase agar jawaban tersimpan permanen.
+          </p>
+        </div>
+        <div className="pt-2">
+          <Link href="/guru/dashboard">
+            <Button className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold">
+              Kembali ke Dashboard Guru
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }

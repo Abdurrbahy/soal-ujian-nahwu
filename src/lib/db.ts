@@ -286,12 +286,20 @@ export async function saveNewSubmission(data: {
 
         if (error) {
           console.error("Supabase insert error:", error);
+          if (process.env.VERCEL) {
+            throw new Error(`Database Cloud Supabase gagal menyimpan: ${error.message} (kode: ${error.code}). Pastikan skrip SQL sudah dijalankan di SQL Editor dashboard Supabase.`);
+          }
         } else {
           return submission;
         }
+      } else if (process.env.VERCEL) {
+        throw new Error("Supabase belum terkonfigurasi di Vercel. Pastikan NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY sudah ditambahkan di Vercel Environment Variables.");
       }
     } catch (e) {
       console.error("Supabase insert exception, writing to local file:", e);
+      if (process.env.VERCEL) {
+        throw e;
+      }
     }
 
     // 2. Local file persistence
@@ -426,4 +434,56 @@ export async function deleteSubmission(id: string): Promise<boolean> {
 
     return true;
   });
+}
+
+export async function checkDatabaseHealth(): Promise<{
+  supabaseConfigured: boolean;
+  supabaseConnected: boolean;
+  tableExists: boolean;
+  count: number;
+  error?: string;
+}> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    const all = await getAllSubmissions();
+    return {
+      supabaseConfigured: false,
+      supabaseConnected: false,
+      tableExists: false,
+      count: all.length,
+      error: "Supabase belum terhubung. Pastikan NEXT_PUBLIC_SUPABASE_URL dan API key sudah terisi di Environment Variables.",
+    };
+  }
+
+  try {
+    const { error, count } = await supabase
+      .from("submissions")
+      .select("id", { count: "exact", head: true });
+
+    if (error) {
+      return {
+        supabaseConfigured: true,
+        supabaseConnected: false,
+        tableExists: false,
+        count: 0,
+        error: `${error.message} (kode: ${error.code})`,
+      };
+    }
+
+    return {
+      supabaseConfigured: true,
+      supabaseConnected: true,
+      tableExists: true,
+      count: count ?? 0,
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return {
+      supabaseConfigured: true,
+      supabaseConnected: false,
+      tableExists: false,
+      count: 0,
+      error: msg,
+    };
+  }
 }

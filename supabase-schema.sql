@@ -48,18 +48,23 @@ INSERT INTO exam_settings (id, duration_minutes, exam_title, target_chapter_min,
 VALUES ('default', 90, 'Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–26)', 1, 26)
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Row Level Security (RLS)
--- Aktifkan RLS untuk keamanan
+-- 3. Row Level Security (RLS) & Hak Akses
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exam_settings ENABLE ROW LEVEL SECURITY;
 
--- Beri akses insert dan select melalui service role / anon key
+-- Berikan izin akses ke tabel untuk anon, authenticated, dan service_role
+GRANT ALL ON TABLE submissions TO anon, authenticated, service_role;
+GRANT ALL ON TABLE exam_settings TO anon, authenticated, service_role;
+
+-- Beri akses insert, select, update melalui policy publik
+DROP POLICY IF EXISTS "Allow public insert and read submissions" ON submissions;
 CREATE POLICY "Allow public insert and read submissions"
   ON submissions
   FOR ALL
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow read and update settings" ON exam_settings;
 CREATE POLICY "Allow read and update settings"
   ON exam_settings
   FOR ALL

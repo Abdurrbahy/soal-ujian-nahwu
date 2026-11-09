@@ -18,6 +18,11 @@ import {
   Settings2,
   GraduationCap,
   Sparkles,
+  Database,
+  RefreshCw,
+  Copy,
+  ExternalLink,
+  Check,
 } from "lucide-react";
 import { Submission, SubmissionStatus } from "@/types/exam";
 import { Button } from "@/components/ui/button";
@@ -36,10 +41,81 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
+const SUPABASE_SCHEMA_SQL = `-- 1. Tabel Hasil Ujian Siswa (submissions)
+CREATE TABLE IF NOT EXISTS submissions (
+  id TEXT PRIMARY KEY,
+  student_name TEXT NOT NULL,
+  student_class TEXT NOT NULL,
+  student_section TEXT DEFAULT '',
+  started_at TIMESTAMPTZ NOT NULL,
+  submitted_at TIMESTAMPTZ NOT NULL,
+  duration_spent_sec INTEGER NOT NULL DEFAULT 0,
+  auto_submitted BOOLEAN NOT NULL DEFAULT false,
+  exam_version TEXT NOT NULL DEFAULT 'miyar-v1.0',
+  answers JSONB NOT NULL DEFAULT '{}'::jsonb,
+  auto_score INTEGER NOT NULL DEFAULT 0,
+  max_auto_score INTEGER NOT NULL DEFAULT 46,
+  manual_score INTEGER NOT NULL DEFAULT 0,
+  max_manual_score INTEGER NOT NULL DEFAULT 58,
+  total_score INTEGER NOT NULL DEFAULT 0,
+  max_total_score INTEGER NOT NULL DEFAULT 104,
+  percentage INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'menunggu_penilaian',
+  focus_events JSONB NOT NULL DEFAULT '[]'::jsonb,
+  manual_grading JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_submissions_class ON submissions(student_class);
+CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status);
+CREATE INDEX IF NOT EXISTS idx_submissions_submitted_at ON submissions(submitted_at DESC);
+
+-- 2. Tabel Pengaturan Ujian (exam_settings)
+CREATE TABLE IF NOT EXISTS exam_settings (
+  id TEXT PRIMARY KEY DEFAULT 'default',
+  duration_minutes INTEGER NOT NULL DEFAULT 90,
+  exam_title TEXT NOT NULL DEFAULT 'Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–26)',
+  target_chapter_min INTEGER NOT NULL DEFAULT 1,
+  target_chapter_max INTEGER NOT NULL DEFAULT 26,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO exam_settings (id, duration_minutes, exam_title, target_chapter_min, target_chapter_max)
+VALUES ('default', 90, 'Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–26)', 1, 26)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3. Row Level Security & Hak Akses
+ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exam_settings ENABLE ROW LEVEL SECURITY;
+
+GRANT ALL ON TABLE submissions TO anon, authenticated, service_role;
+GRANT ALL ON TABLE exam_settings TO anon, authenticated, service_role;
+
+DROP POLICY IF EXISTS "Allow public insert and read submissions" ON submissions;
+CREATE POLICY "Allow public insert and read submissions"
+  ON submissions FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow read and update settings" ON exam_settings;
+CREATE POLICY "Allow read and update settings"
+  ON exam_settings FOR ALL
+  USING (true)
+  WITH CHECK (true);`;
+
 export default function TeacherDashboardPage() {
   const router = useRouter();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [copyingSql, setCopyingSql] = useState(false);
+  const [dbHealth, setDbHealth] = useState<{
+    supabaseConfigured: boolean;
+    supabaseConnected: boolean;
+    tableExists: boolean;
+    count: number;
+    error?: string;
+  } | null>(null);
 
   // Filters & Search
   const [search, setSearch] = useState("");
@@ -53,6 +129,7 @@ export default function TeacherDashboardPage() {
 
   // Load Submissions
   const fetchSubmissions = async () => {
+    setIsRefreshing(true);
     try {
       const res = await fetch("/api/teacher/submissions");
       if (res.status === 401) {
@@ -63,11 +140,26 @@ export default function TeacherDashboardPage() {
       if (data.submissions) {
         setSubmissions(data.submissions);
       }
+      if (data.dbHealth) {
+        setDbHealth(data.dbHealth);
+      }
     } catch (e) {
       console.error("Failed to load submissions", e);
       toast.error("Gagal memuat data ujian siswa.");
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleCopySql = async () => {
+    try {
+      await navigator.clipboard.writeText(SUPABASE_SCHEMA_SQL);
+      setCopyingSql(true);
+      toast.success("Skrip SQL berhasil disalin! Tempel di SQL Editor Supabase.");
+      setTimeout(() => setCopyingSql(false), 2500);
+    } catch {
+      toast.error("Gagal menyalin. Silakan buka file supabase-schema.sql di proyek.");
     }
   };
 
@@ -229,6 +321,92 @@ export default function TeacherDashboardPage() {
           </Button>
         </div>
       </div>
+
+      {/* Supabase Database Health Alert / Status */}
+      {dbHealth && (!dbHealth.tableExists || !dbHealth.supabaseConnected) && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50/80 p-4 sm:p-5 shadow-sm space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-lg bg-amber-200 text-amber-900 shrink-0">
+                <Database className="w-5 h-5" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm sm:text-base font-bold text-amber-950">
+                    Tabel Database Belum Tersedia di Supabase
+                  </h3>
+                  <Badge variant="outline" className="border-amber-400 text-amber-900 bg-amber-100 text-[11px]">
+                    Diperlukan untuk Vercel
+                  </Badge>
+                </div>
+                <p className="text-xs sm:text-sm text-amber-900/90 leading-relaxed">
+                  Platform berjalan di serverless Vercel. Agar jawaban siswa tidak hilang dan langsung muncul di dashboard guru, tabel <code className="font-semibold bg-amber-200/60 px-1 py-0.5 rounded">submissions</code> wajib dibuat di project Supabase Anda.
+                </p>
+                {dbHealth.error && (
+                  <p className="font-mono text-[11px] bg-white/80 text-amber-950 px-2.5 py-1.5 rounded border border-amber-300">
+                    Status: {dbHealth.error}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 sm:self-center shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopySql}
+                className="text-xs gap-1.5 h-9 bg-white border-amber-300 hover:bg-amber-100 text-amber-950 font-medium shadow-sm"
+              >
+                {copyingSql ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                {copyingSql ? "Tersalin ke Clipboard!" : "Salin Skrip SQL"}
+              </Button>
+              <a
+                href="https://supabase.com/dashboard/project/_/sql"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  size="sm"
+                  className="text-xs gap-1.5 h-9 bg-emerald-800 hover:bg-emerald-900 text-white font-medium shadow-sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Buka Supabase SQL Editor
+                </Button>
+              </a>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={fetchSubmissions}
+                disabled={isRefreshing}
+                className="text-xs gap-1.5 h-9 text-amber-900 hover:bg-amber-100"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+                Periksa Ulang
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dbHealth && dbHealth.tableExists && dbHealth.supabaseConnected && (
+        <div className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+            <span className="font-semibold text-emerald-900">Database Cloud Supabase Terhubung & Aktif</span>
+            <span className="text-emerald-700 hidden sm:inline">• {dbHealth.count} rekaman ujian tersimpan permanen di cloud</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchSubmissions}
+            disabled={isRefreshing}
+            className="text-xs h-7 px-2.5 text-emerald-800 hover:bg-emerald-100 gap-1.5"
+          >
+            <RefreshCw className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`} />
+            Segarkan
+          </Button>
+        </div>
+      )}
 
       {/* Summary Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

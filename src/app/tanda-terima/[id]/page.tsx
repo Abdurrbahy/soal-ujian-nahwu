@@ -116,7 +116,7 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
             <div>
               <CardTitle className="text-lg font-bold">Bukti Pengiriman Ujian</CardTitle>
               <CardDescription className="text-xs">
-                Materi: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–26)
+                Materi: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–20)
               </CardDescription>
             </div>
             <div className="text-right">

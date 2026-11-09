@@ -23,6 +23,7 @@ import {
   Copy,
   ExternalLink,
   Check,
+  FileDown,
 } from "lucide-react";
 import { Submission, SubmissionStatus } from "@/types/exam";
 import { Button } from "@/components/ui/button";
@@ -284,11 +285,22 @@ export default function TeacherDashboardPage() {
             Dashboard Hasil & Penilaian Ujian
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Kelola hasil ujian 75 soal, periksa jawaban terbuka, telaah peristiwa fokus, dan beri skor manual.
+            Kelola hasil ujian 60 soal (Pelajaran 1–20), periksa jawaban terbuka, telaah peristiwa fokus, dan beri skor manual.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <Link href="/kisi-kisi" target="_blank">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1.5 h-9 text-emerald-800 border-emerald-300 hover:bg-emerald-50"
+            >
+              <FileDown className="w-4 h-4 text-emerald-700" />
+              <span>Kisi-Kisi PDF</span>
+            </Button>
+          </Link>
+
           <Button
             variant="outline"
             size="sm"

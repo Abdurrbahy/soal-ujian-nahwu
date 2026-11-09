@@ -373,7 +373,7 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            Semua (75 Soal)
+            Semua ({QUESTIONS.length} Soal)
           </button>
         </div>
 

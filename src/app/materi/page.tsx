@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, Search, ArrowLeft, GraduationCap, CheckCircle } from "lucide-react";
+import { BookOpen, Search, ArrowLeft, GraduationCap, CheckCircle, FileDown } from "lucide-react";
 import { CHAPTERS } from "@/data/chapters";
 import { QUESTIONS } from "@/data/questions";
 import { Button } from "@/components/ui/button";
@@ -36,19 +36,28 @@ export default function MateriPage() {
             <span className="text-foreground">Cakupan Materi</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Daftar 26 Pelajaran Nahwu
+            Daftar 20 Pelajaran Nahwu (Bab 1–20)
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Rujukan resmi: <span className="arabic-inline font-medium text-emerald-800">النحو الواضح في قواعد اللغة العربية للمرحلة الابتدائية، الجزء الثاني</span>
           </p>
         </div>
 
-        <Link href="/ujian">
-          <Button className="bg-emerald-800 hover:bg-emerald-900 text-white gap-2 shadow-sm">
-            <GraduationCap className="w-4 h-4" />
-            Mulai Ujian 75 Soal
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link href="/kisi-kisi">
+            <Button variant="outline" className="text-emerald-800 border-emerald-300 hover:bg-emerald-50 gap-2 shadow-xs">
+              <FileDown className="w-4 h-4 text-emerald-700" />
+              Unduh Kisi-Kisi PDF
+            </Button>
+          </Link>
+
+          <Link href="/ujian">
+            <Button className="bg-emerald-800 hover:bg-emerald-900 text-white gap-2 shadow-sm">
+              <GraduationCap className="w-4 h-4" />
+              Mulai Ujian 60 Soal
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Search and Summary */}
@@ -63,7 +72,7 @@ export default function MateriPage() {
           />
         </div>
         <div className="text-xs sm:text-sm text-muted-foreground">
-          Menampilkan <span className="font-semibold text-foreground">{filteredChapters.length}</span> dari 26 pelajaran (Semua terwakili min. 2 soal)
+          Menampilkan <span className="font-semibold text-foreground">{filteredChapters.length}</span> dari 20 pelajaran (Setiap bab terwakili 3 butir soal)
         </div>
       </div>
 

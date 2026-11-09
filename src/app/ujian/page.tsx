@@ -359,13 +359,13 @@ export default function ExamPage() {
             <CardContent className="p-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
               <ul className="list-disc pl-5 space-y-2 text-foreground">
                 <li>
-                  <strong>Tepat 75 Soal:</strong> Mencakup seluruh 26 pelajaran Al-Nahw al-Wadih Juz 2 (Pilihan Ganda, Benar/Salah, Isian Singkat, Klasifikasi, Tashkeel, Transformasi, Koreksi, dan I‘rab).
+                  <strong>Tepat {QUESTIONS.length} Soal:</strong> Mencakup seluruh 20 pelajaran Al-Nahw al-Wadih Juz 2 (Bab 1–20: Pilihan Ganda, Benar/Salah, Isian Singkat, Klasifikasi, Tashkeel, Transformasi, Koreksi, dan I‘rab).
                 </li>
                 <li>
                   <strong>Pengerjaan Mandiri & Fleksibel:</strong> Anda dapat mengerjakan soal dengan tenang tanpa batasan timer countdown otomatis. Jawaban berapapun jumlahnya dapat Anda kirimkan kapan saja setelah melakukan konfirmasi.
                 </li>
                 <li>
-                  <strong>Penilaian Campuran:</strong> Skor objektif (46 soal) akan langsung dihitung saat pengiriman, sedangkan 29 soal uraian/tashkeel/i‘rab akan dinilai manual oleh guru.
+                  <strong>Penilaian Seimbang:</strong> Skor objektif (40 butir soal) langsung dihitung otomatis oleh sistem, sedangkan 20 butir soal uraian/tashkeel/i‘rab akan diperiksa dan dinilai langsung oleh guru.
                 </li>
                 <li>
                   <strong>Tanda Terima & Bukti Pengiriman:</strong> Setelah selesai, Anda akan menerima nomor resi dan rangkuman jawaban yang dapat disimpan atau dicetak.
@@ -410,7 +410,7 @@ export default function ExamPage() {
           <div className="space-y-2">
             <h2 className="text-xl font-bold text-foreground">Sedang Mengirim Jawaban Ujian...</h2>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Mohon menunggu dan jangan menutup halaman ini. Sistem sedang menyimpan jawaban 75 soal Anda ke database dan menghitung skor otomatis.
+              Mohon menunggu dan jangan menutup halaman ini. Sistem sedang menyimpan jawaban {QUESTIONS.length} soal Anda ke database dan menghitung skor otomatis.
             </p>
           </div>
           <div className="pt-2 flex items-center justify-center gap-2 text-xs text-emerald-800 font-medium">
@@ -439,7 +439,7 @@ export default function ExamPage() {
               <Grid className="w-4 h-4 text-emerald-800" />
               <span>Daftar Soal</span>
               <Badge variant="secondary" className="ml-1 text-[11px] px-1.5 py-0">
-                {currentIndex + 1}/75
+                {currentIndex + 1}/{QUESTIONS.length}
               </Badge>
             </button>
 
@@ -453,7 +453,7 @@ export default function ExamPage() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-background border-border text-xs font-semibold text-foreground">
               <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-              <span>{answeredCount} / 75 Terjawab</span>
+              <span>{answeredCount} / {QUESTIONS.length} Terjawab</span>
             </div>
 
             <Button
@@ -473,8 +473,8 @@ export default function ExamPage() {
 
       {/* Main Exam Content Area */}
       <div className="container mx-auto max-w-4xl px-4 py-6 sm:py-8 space-y-6">
-        {/* Banner: Seluruh 75 Soal Selesai Dijawab */}
-        {answeredCount === 75 && (
+        {/* Banner: Seluruh Soal Selesai Dijawab */}
+        {answeredCount === QUESTIONS.length && (
           <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border-2 border-emerald-600 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -482,10 +482,10 @@ export default function ExamPage() {
               </div>
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-200/90 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 text-[11px] font-bold uppercase tracking-wider mb-1">
-                  <Sparkles className="w-3 h-3" /> 75 dari 75 Soal Selesai Terjawab
+                  <Sparkles className="w-3 h-3" /> {QUESTIONS.length} dari {QUESTIONS.length} Soal Selesai Terjawab
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-foreground">
-                  Alhamdulillah, seluruh 75 soal telah selesai dijawab!
+                  Alhamdulillah, seluruh {QUESTIONS.length} soal telah selesai dijawab!
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   Anda sudah mengisi semua nomor. Anda dapat meneliti kembali jawaban Anda atau langsung mengirimkan ujian sekarang.
@@ -677,7 +677,7 @@ export default function ExamPage() {
             </Button>
 
             <div className="text-xs text-muted-foreground hidden sm:block">
-              Soal {currentIndex + 1} dari 75
+              Soal {currentIndex + 1} dari {QUESTIONS.length}
             </div>
 
             <div className="flex items-center gap-2">
@@ -687,7 +687,7 @@ export default function ExamPage() {
                 className="border-emerald-700 text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 font-semibold gap-1.5"
               >
                 <Send className="w-4 h-4" />
-                <span>Kirim Ujian ({answeredCount}/75)</span>
+                <span>Kirim Ujian ({answeredCount}/{QUESTIONS.length})</span>
               </Button>
 
               {currentIndex < QUESTIONS.length - 1 ? (
@@ -742,7 +742,7 @@ export default function ExamPage() {
               onClick={() => setIsNavGridOpen(true)}
               className="text-xs text-emerald-800 hover:text-emerald-900 font-medium h-7"
             >
-              Buka Navigasi Grid (1–75)
+              Buka Navigasi Grid (1–{QUESTIONS.length})
             </Button>
           </div>
         </div>
@@ -770,11 +770,11 @@ export default function ExamPage() {
         )}
       </div>
 
-      {/* Modal: Navigasi Nomor Soal Grid 1-75 */}
+      {/* Modal: Navigasi Nomor Soal Grid */}
       <Dialog open={isNavGridOpen} onOpenChange={setIsNavGridOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-lg font-bold">Navigasi 75 Nomor Soal</DialogTitle>
+            <DialogTitle className="text-lg font-bold">Navigasi {QUESTIONS.length} Nomor Soal</DialogTitle>
             <DialogDescription className="text-xs">
               Klik nomor soal untuk melompat langsung ke soal tersebut.
             </DialogDescription>
@@ -789,7 +789,7 @@ export default function ExamPage() {
                 navFilter === "all" ? "bg-emerald-800 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
-              Semua (75)
+              Semua ({QUESTIONS.length})
             </button>
             <button
               onClick={() => setNavFilter("unanswered")}
@@ -872,16 +872,16 @@ export default function ExamPage() {
                   setIsSubmitDialogOpen(true);
                 }}
                 className={`text-white font-bold gap-1.5 shadow-sm ${
-                  answeredCount === 75
+                  answeredCount === QUESTIONS.length
                     ? "bg-emerald-800 hover:bg-emerald-900 ring-2 ring-emerald-400"
                     : "bg-emerald-800 hover:bg-emerald-900"
                 }`}
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>
-                  {answeredCount === 75
-                    ? "Kirim Ujian (75/75 Selesai)"
-                    : `Kirim Ujian (${answeredCount}/75)`}
+                  {answeredCount === QUESTIONS.length
+                    ? `Kirim Ujian (${QUESTIONS.length}/${QUESTIONS.length} Selesai)`
+                    : `Kirim Ujian (${answeredCount}/${QUESTIONS.length})`}
                 </span>
               </Button>
             </div>
@@ -908,7 +908,7 @@ export default function ExamPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Soal Terjawab:</span>
-                  <strong>{answeredCount} dari 75 soal</strong>
+                  <strong>{answeredCount} dari {QUESTIONS.length} soal</strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Soal Belum Dijawab:</span>

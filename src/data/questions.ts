@@ -1,6 +1,6 @@
 import { Question } from "@/types/exam";
 
-export const QUESTIONS: Question[] = [
+export const ALL_QUESTIONS: Question[] = [
   // --- BAB 1: تقسيم الفعل إلى صحيح الآخر ومعتل الآخر (Hal. 3-6) ---
   {
     id: 1,
@@ -1432,3 +1432,9 @@ export const QUESTIONS: Question[] = [
     }
   }
 ];
+
+// Active exam questions focused strictly on Bab 1 to 20 (60 questions total)
+export const QUESTIONS: Question[] = ALL_QUESTIONS.filter((q) => q.babNumber <= 20);
+
+// Archived questions for Bab 21 to 26 for future use if needed
+export const ARCHIVED_QUESTIONS_BAB_21_26: Question[] = ALL_QUESTIONS.filter((q) => q.babNumber > 20);

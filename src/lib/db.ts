@@ -22,9 +22,9 @@ export interface ExamSettings {
 
 const DEFAULT_SETTINGS: ExamSettings = {
   durationMinutes: 90,
-  examTitle: "Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–26)",
+  examTitle: "Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–20)",
   targetChapterMin: 1,
-  targetChapterMax: 26,
+  targetChapterMax: 20,
 };
 
 function rowToSubmission(row: Record<string, unknown>): Submission {

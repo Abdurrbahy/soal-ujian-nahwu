@@ -1,6 +1,6 @@
 import { ChapterMeta } from "@/types/exam";
 
-export const CHAPTERS: ChapterMeta[] = [
+export const ALL_CHAPTERS: ChapterMeta[] = [
   {
     babNumber: 1,
     titleAr: "تقسيم الفعل إلى صحيح الآخر ومعتل الآخر",
@@ -293,3 +293,9 @@ export const CHAPTERS: ChapterMeta[] = [
     ]
   }
 ];
+
+// Active chapters focused on Bab 1 to 20
+export const CHAPTERS: ChapterMeta[] = ALL_CHAPTERS.filter((c) => c.babNumber <= 20);
+
+// Archived chapters for Bab 21 to 26 for future use if needed
+export const ARCHIVED_CHAPTERS_BAB_21_26: ChapterMeta[] = ALL_CHAPTERS.filter((c) => c.babNumber > 20);

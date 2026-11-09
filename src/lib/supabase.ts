@@ -1,7 +1,10 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 export function getNormalizedUrl(): string | null {
-  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const raw =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    "https://ejhikwwiqetnnqnjiuop.supabase.co";
   if (!raw) return null;
 
   // Strip quotes, spaces, zero-width characters, newlines

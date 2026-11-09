@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
 import Link from "next/link";
-import { BookOpen, GraduationCap, ShieldCheck, FileDown } from "lucide-react";
+import { BookOpen, GraduationCap, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Mi‘yar — Platform Ujian Nahwu",
@@ -35,18 +35,10 @@ export default function RootLayout({
               </div>
             </Link>
 
-            <nav className="flex items-center space-x-1 sm:space-x-2.5">
-              <Link
-                href="/kisi-kisi"
-                className="px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-md hover:bg-muted transition-colors flex items-center gap-1.5 text-emerald-800 bg-emerald-50/80 border border-emerald-200 hover:bg-emerald-100"
-              >
-                <FileDown className="w-4 h-4 text-emerald-700" />
-                <span>Kisi-Kisi PDF</span>
-              </Link>
-
+            <nav className="flex items-center space-x-1 sm:space-x-3">
               <Link
                 href="/materi"
-                className="px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-md hover:bg-muted transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
               >
                 <BookOpen className="w-4 h-4 text-emerald-700" />
                 <span className="hidden md:inline">20 Pelajaran</span>
@@ -54,7 +46,7 @@ export default function RootLayout({
 
               <Link
                 href="/ujian"
-                className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md bg-emerald-800 text-white hover:bg-emerald-900 transition-colors shadow-sm flex items-center gap-1.5"
+                className="px-3.5 py-2 text-sm font-medium rounded-md bg-emerald-800 text-white hover:bg-emerald-900 transition-colors shadow-sm flex items-center gap-1.5 font-semibold"
               >
                 <GraduationCap className="w-4 h-4" />
                 <span>Mulai Ujian</span>
@@ -62,7 +54,7 @@ export default function RootLayout({
 
               <Link
                 href="/guru/dashboard"
-                className="px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-md border border-input hover:bg-muted transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                className="px-3 py-2 text-sm font-medium rounded-md border border-input hover:bg-muted transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-700" />
                 <span className="hidden sm:inline">Portal Guru</span>
@@ -86,10 +78,6 @@ export default function RootLayout({
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs">
-              <Link href="/kisi-kisi" className="hover:underline hover:text-foreground">
-                Kisi-Kisi & Soal (PDF)
-              </Link>
-              <span>•</span>
               <Link href="/materi" className="hover:underline hover:text-foreground">
                 Daftar Pelajaran 1–20
               </Link>

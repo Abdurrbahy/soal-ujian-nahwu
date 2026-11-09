@@ -13,8 +13,8 @@ import { toast } from "sonner";
 
 export default function TeacherLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("guru@miyar.sch.id");
-  const [pin, setPin] = useState("nahwu2026");
+  const [email, setEmail] = useState("");
+  const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,22 +102,12 @@ export default function TeacherLoginPage() {
                   id="pin"
                   type="password"
                   className="pl-9 text-sm font-mono"
-                  placeholder="••••••••"
+                  placeholder="Masukkan PIN Keamanan..."
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   required
                 />
               </div>
-            </div>
-
-            {/* Demo / Allowlist Notice */}
-            <div className="p-3 rounded-lg bg-muted/40 border border-border/80 text-xs text-muted-foreground space-y-1">
-              <div className="font-semibold text-foreground flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5 text-emerald-800" />
-                Kredensial Default Guru (Demo / Pengujian):
-              </div>
-              <p>Email: <span className="font-mono text-foreground">guru@miyar.sch.id</span></p>
-              <p>PIN Akses: <span className="font-mono text-foreground">nahwu2026</span></p>
             </div>
           </CardContent>
 

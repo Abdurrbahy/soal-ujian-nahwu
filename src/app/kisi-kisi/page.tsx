@@ -14,32 +14,163 @@ import {
   Eye,
   EyeOff,
   Filter,
+  Lock,
+  KeyRound,
+  ShieldAlert,
 } from "lucide-react";
 import { CHAPTERS } from "@/data/chapters";
 import { QUESTIONS } from "@/data/questions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 function KisiKisiContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"all" | "kisi" | "soal">("all");
   const [showAnswerKey, setShowAnswerKey] = useState(true);
 
-  // Auto trigger print if ?print=true is present in URL
+  // Teacher Authentication state
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  const [pinInput, setPinInput] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
+
+  // Check auth session on mount
   useEffect(() => {
-    if (searchParams.get("print") === "true") {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/teacher/auth");
+        const data = await res.json();
+        setIsAuth(Boolean(data.authenticated));
+      } catch {
+        setIsAuth(false);
+      }
+    }
+    checkAuth();
+  }, []);
+
+  // Handle PIN unlock
+  const handleUnlockWithPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pinInput.trim()) {
+      setPinError("Silakan masukkan PIN Guru.");
+      return;
+    }
+    setVerifying(true);
+    setPinError(null);
+
+    try {
+      const res = await fetch("/api/teacher/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pinInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "PIN Guru salah.");
+      }
+      setIsAuth(true);
+      toast.success("Akses berhasil dibuka! Dokumen kisi-kisi dan kunci jawaban siap digunakan.");
+    } catch (err: unknown) {
+      setPinError(err instanceof Error ? err.message : "PIN Guru tidak cocok.");
+      toast.error("PIN salah. Akses ini hanya untuk guru/asatidzah.");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  // Auto trigger print if ?print=true is present in URL and user is authenticated
+  useEffect(() => {
+    if (isAuth && searchParams.get("print") === "true") {
       const timer = setTimeout(() => {
         window.print();
       }, 700);
       return () => clearTimeout(timer);
     }
-  }, [searchParams]);
+  }, [isAuth, searchParams]);
 
   const handlePrint = () => {
     window.print();
   };
 
-  // Group questions by babNumber
+  // 1. Loading check
+  if (isAuth === null) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-background flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-4 border-emerald-800 border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-xs text-muted-foreground font-medium">Memverifikasi hak akses pendidik...</p>
+      </div>
+    );
+  }
+
+  // 2. Gate: Show PIN prompt if not authenticated
+  if (!isAuth) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto shadow-sm">
+              <Lock className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Dokumen Rahasia Pendidik
+            </h1>
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm mx-auto">
+              Kisi-kisi soal dan rubrik kunci jawaban Al-Nahw al-Wadih dilindungi untuk menjaga kerahasiaan dan integritas ujian santri.
+            </p>
+          </div>
+
+          <div className="bg-card border border-border shadow-md rounded-xl p-6 space-y-4">
+            <form onSubmit={handleUnlockWithPin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-emerald-800" />
+                  Masukkan PIN Guru / Penguji:
+                </label>
+                <Input
+                  type="password"
+                  placeholder="PIN Guru..."
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value)}
+                  autoFocus
+                  className="text-center tracking-widest text-base font-mono"
+                />
+              </div>
+
+              {pinError && (
+                <p className="text-xs text-destructive font-medium text-center">
+                  {pinError}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={verifying}
+                className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold"
+              >
+                {verifying ? "Memverifikasi PIN..." : "Buka Kisi-Kisi & Kunci Jawaban"}
+              </Button>
+            </form>
+
+            <div className="pt-2 border-t text-center space-y-2">
+              <p className="text-[11px] text-muted-foreground">
+                Santri hanya diperkenankan mengakses halaman ujian dan daftar materi.
+              </p>
+              <Link
+                href="/"
+                className="text-xs text-emerald-800 hover:underline inline-flex items-center gap-1 font-medium"
+              >
+                <ArrowLeft className="w-3 h-3" /> Kembali ke Halaman Utama
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Authenticated: Render full Kisi-Kisi & Questions
   const questionsByBab = CHAPTERS.map((ch) => ({
     chapter: ch,
     questions: QUESTIONS.filter((q) => q.babNumber === ch.babNumber),

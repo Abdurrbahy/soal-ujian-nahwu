@@ -37,21 +37,14 @@ export default function HomePage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link href="/ujian" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white gap-2 h-12 px-8 text-base shadow-md">
+            <Button size="lg" className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white gap-2 h-12 px-8 text-base shadow-md font-semibold">
               <GraduationCap className="w-5 h-5" />
               Mulai Ujian Siswa
             </Button>
           </Link>
 
-          <Link href="/kisi-kisi" className="w-full sm:w-auto">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 h-12 px-6 text-base border-emerald-300 text-emerald-800 hover:bg-emerald-50">
-              <FileDown className="w-4 h-4 text-emerald-700" />
-              Kisi-Kisi & Soal (PDF)
-            </Button>
-          </Link>
-
           <Link href="/materi" className="w-full sm:w-auto">
-            <Button variant="ghost" size="lg" className="w-full sm:w-auto gap-2 h-12 px-6 text-base text-muted-foreground hover:text-foreground">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 h-12 px-6 text-base text-foreground hover:bg-muted">
               <BookOpen className="w-4 h-4 text-emerald-800" />
               Daftar 20 Pelajaran
             </Button>
@@ -121,18 +114,11 @@ export default function HomePage() {
               Struktur penilaian terbagi seimbang 50% sistem otomatis instan dan 50% penilaian mendalam oleh guru.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/kisi-kisi">
-              <Button variant="outline" size="sm" className="text-emerald-800 border-emerald-300 gap-1.5 text-xs font-semibold">
-                <FileDown className="w-3.5 h-3.5" /> Unduh Kisi-Kisi PDF
-              </Button>
-            </Link>
-            <Link href="/materi">
-              <Button variant="ghost" className="text-emerald-800 hover:text-emerald-900 gap-1 text-sm font-medium p-0 h-auto">
-                Lihat 20 Bab <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-          </div>
+          <Link href="/materi">
+            <Button variant="ghost" className="text-emerald-800 hover:text-emerald-900 gap-1 text-sm font-medium p-0 h-auto">
+              Lihat 20 Bab <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

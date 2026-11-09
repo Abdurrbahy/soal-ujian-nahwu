@@ -43,21 +43,12 @@ export default function MateriPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <Link href="/kisi-kisi">
-            <Button variant="outline" className="text-emerald-800 border-emerald-300 hover:bg-emerald-50 gap-2 shadow-xs">
-              <FileDown className="w-4 h-4 text-emerald-700" />
-              Unduh Kisi-Kisi PDF
-            </Button>
-          </Link>
-
-          <Link href="/ujian">
-            <Button className="bg-emerald-800 hover:bg-emerald-900 text-white gap-2 shadow-sm">
-              <GraduationCap className="w-4 h-4" />
-              Mulai Ujian 60 Soal
-            </Button>
-          </Link>
-        </div>
+        <Link href="/ujian">
+          <Button className="bg-emerald-800 hover:bg-emerald-900 text-white gap-2 shadow-sm font-semibold">
+            <GraduationCap className="w-4 h-4" />
+            Mulai Ujian 60 Soal
+          </Button>
+        </Link>
       </div>
 
       {/* Search and Summary */}

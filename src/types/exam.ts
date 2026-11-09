@@ -35,7 +35,7 @@ export interface Question {
 }
 
 export interface FocusEventRecord {
-  type: "visibility_hidden" | "window_blur";
+  type: "visibility_hidden" | "window_blur" | "screenshot_attempt" | "print_attempt";
   timestamp: string;
   durationSec?: number;
   details?: string;

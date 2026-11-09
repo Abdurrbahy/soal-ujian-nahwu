@@ -209,6 +209,59 @@ export default function ExamPage() {
       }
     };
 
+    const recordScreenshotAttempt = (detail: string) => {
+      const newEvent: FocusEventRecord = {
+        type: "screenshot_attempt",
+        timestamp: new Date().toISOString(),
+        details: detail,
+      };
+
+      setFocusEvents((prev) => [...prev, newEvent]);
+      setFocusNotice(`Pemberitahuan Keamanan: Upaya tangkapan layar (screenshot) terdeteksi dan dicatat dalam laporan guru.`);
+      toast.warning("Peringatan: Upaya tangkapan layar (screenshot) terdeteksi dan dicatat dalam rekam jejak guru.");
+
+      // Attempt to clear/overwrite clipboard to prevent exam leakage
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText("Tangkapan layar dinonaktifkan demi integritas ujian Nahwu.");
+        }
+      } catch {}
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 1. PrintScreen key (Windows / Linux)
+      if (e.key === "PrintScreen" || e.code === "PrintScreen") {
+        recordScreenshotAttempt("Tombol PrintScreen ditekan");
+        return;
+      }
+
+      // 2. Mac screenshot shortcuts: Cmd + Shift + 3 / 4 / 5
+      if (e.metaKey && e.shiftKey && ["Digit3", "Digit4", "Digit5"].includes(e.code)) {
+        recordScreenshotAttempt(`Shortcut tangkapan layar Mac (${e.code}) terdeteksi`);
+        return;
+      }
+
+      // 3. Snipping tool: Win + Shift + S or Ctrl + Shift + S
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.code === "KeyS" || e.key === "S" || e.key === "s")) {
+        e.preventDefault();
+        recordScreenshotAttempt("Kombinasi tombol Snipping Tool (Shift + S) terdeteksi");
+        return;
+      }
+
+      // 4. Print shortcut: Ctrl + P / Cmd + P
+      if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P")) {
+        e.preventDefault();
+        recordScreenshotAttempt("Upaya cetak layar (Ctrl/Cmd + P) diblokir");
+        return;
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "PrintScreen" || e.code === "PrintScreen") {
+        recordScreenshotAttempt("Pelepasan tombol PrintScreen terdeteksi");
+      }
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
         recordLoss();
@@ -228,11 +281,15 @@ export default function ExamPage() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleWindowBlur);
     window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleWindowBlur);
       window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [stage]);
 
@@ -426,7 +483,18 @@ export default function ExamPage() {
   // STAGE 3: LAYAR UJIAN AKTIF
   // ==========================================
   return (
-    <div className="min-h-screen bg-muted/20 pb-20">
+    <div
+      className="min-h-screen bg-muted/20 pb-20 select-none relative"
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {/* Dynamic Security Watermark (Anti-Camera / Anti-Leak) */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden opacity-[0.035] dark:opacity-[0.05] flex flex-wrap gap-12 p-8 rotate-[-15deg] items-center justify-center">
+        {Array.from({ length: 24 }).map((_, i) => (
+          <div key={i} className="text-center font-mono text-[11px] font-bold text-foreground tracking-widest whitespace-nowrap">
+            {studentName} • {studentClass} • MI‘YAR NAHWU
+          </div>
+        ))}
+      </div>
       {/* Sticky Exam Header */}
       <div className="sticky top-16 z-30 w-full border-b bg-card/95 backdrop-blur shadow-sm">
         <div className="container mx-auto max-w-6xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">

@@ -18,6 +18,7 @@ import {
   X,
   HelpCircle,
   Sparkles,
+  Camera,
 } from "lucide-react";
 import { QUESTIONS } from "@/data/questions";
 import { Submission, ManualGradeItem, Question } from "@/types/exam";
@@ -318,21 +319,36 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
               {submission.focusEvents.map((evt, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-2.5 rounded-md border text-xs bg-muted/30"
+                  className={`flex items-center justify-between p-2.5 rounded-md border text-xs ${
+                    evt.type === "screenshot_attempt"
+                      ? "bg-rose-50/70 border-rose-300 dark:bg-rose-950/20"
+                      : "bg-muted/30"
+                  }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-mono font-bold text-[10px]">
+                    <span
+                      className={`w-5 h-5 rounded-full flex items-center justify-center font-mono font-bold text-[10px] ${
+                        evt.type === "screenshot_attempt"
+                          ? "bg-rose-200 text-rose-900"
+                          : "bg-amber-200 text-amber-900"
+                      }`}
+                    >
                       {idx + 1}
                     </span>
                     <span className="text-foreground">{evt.details || "Tab browser ditinggalkan / diminimalkan"}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-muted-foreground font-mono">
+                  <div className="flex items-center gap-2.5 text-muted-foreground font-mono">
+                    {evt.type === "screenshot_attempt" && (
+                      <Badge variant="destructive" className="text-[10px] py-0 gap-1 bg-rose-100 text-rose-900 border-rose-300">
+                        <Camera className="w-3 h-3 text-rose-700" /> Screenshot
+                      </Badge>
+                    )}
                     <span>{new Date(evt.timestamp).toLocaleTimeString("id-ID")}</span>
-                    {evt.durationSec && (
+                    {evt.durationSec ? (
                       <Badge variant="outline" className="text-[10px] py-0">
                         {evt.durationSec} dtk
                       </Badge>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))}

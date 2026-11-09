@@ -43,7 +43,12 @@ export function getNormalizedUrl(): string | null {
       }
     }
 
-    // 5. Always use parsed.origin to strip trailing slashes, paths (/rest/v1), queries
+    // 5. If hostname has no dot (user entered only Project ID, e.g. "ejhikwwiqetnnqnjiuop")
+    if (!parsed.hostname.includes(".")) {
+      return `https://${parsed.hostname}.supabase.co`;
+    }
+
+    // 6. Always use parsed.origin to strip trailing slashes, paths (/rest/v1), queries
     if (parsed.protocol === "http:" || parsed.protocol === "https:") {
       return parsed.origin;
     }

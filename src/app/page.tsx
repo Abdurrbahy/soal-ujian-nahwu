@@ -82,10 +82,10 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center mb-2">
               <Clock className="w-5 h-5" />
             </div>
-            <CardTitle className="text-2xl sm:text-3xl font-bold text-foreground">90 Menit</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl font-bold text-foreground">Fleksibel</CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0 text-xs sm:text-sm text-muted-foreground">
-            Timer hitung mundur otomatis dengan auto-submit saat habis.
+            Pengerjaan mandiri tanpa countdown, siap dikirim kapan saja.
           </CardContent>
         </Card>
 

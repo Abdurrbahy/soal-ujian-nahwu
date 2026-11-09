@@ -48,7 +48,6 @@ import {
 import { toast } from "sonner";
 
 const LOCAL_STORAGE_KEY = "miyar_exam_session_v1";
-const DEFAULT_DURATION_SECONDS = 90 * 60; // 90 minutes
 
 export default function ExamPage() {
   const router = useRouter();
@@ -66,11 +65,10 @@ export default function ExamPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [markedQuestions, setMarkedQuestions] = useState<Record<number, boolean>>({});
 
-  // Timer & Timestamps
+  // Timestamps
   const [startedAt, setStartedAt] = useState<string>("");
-  const [timeLeft, setTimeLeft] = useState<number>(DEFAULT_DURATION_SECONDS);
 
-  // Focus tracking
+  // Focus tracking (Tab Switch / Window Blur)
   const [focusEvents, setFocusEvents] = useState<FocusEventRecord[]>([]);
   const [focusNotice, setFocusNotice] = useState<string | null>(null);
   const blurTimeRef = useRef<number | null>(null);
@@ -78,7 +76,6 @@ export default function ExamPage() {
 
   // Submission Guard Refs
   const isSubmittingRef = useRef<boolean>(false);
-  const hasAutoSubmittedRef = useRef<boolean>(false);
 
   // Modals
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
@@ -92,10 +89,7 @@ export default function ExamPage() {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.stage === "exam" && parsed.startedAt) {
-          const elapsed = Math.floor((Date.now() - new Date(parsed.startedAt).getTime()) / 1000);
-          const remaining = Math.max(0, DEFAULT_DURATION_SECONDS - elapsed);
-
+        if (parsed.stage === "exam") {
           setStudentName(parsed.studentName || "");
           setStudentClass(parsed.studentClass || "");
           setStudentSection(parsed.studentSection || "");
@@ -103,8 +97,7 @@ export default function ExamPage() {
           setMarkedQuestions(parsed.markedQuestions || {});
           setFocusEvents(parsed.focusEvents || []);
           setCurrentIndex(parsed.currentIndex || 0);
-          setStartedAt(parsed.startedAt);
-          setTimeLeft(remaining);
+          setStartedAt(parsed.startedAt || new Date().toISOString());
           setStage("exam");
 
           toast.info("Sesi ujian Anda sebelumnya telah dipulihkan.");
@@ -139,7 +132,7 @@ export default function ExamPage() {
     }
   }, [stage, studentName, studentClass, studentSection, startedAt, answers, markedQuestions, focusEvents, currentIndex]);
 
-  // Submit Handler Definition (declared before timer/blur listeners)
+  // Submit Handler Definition
   const handleSubmitExam = useCallback(
     async (isAutoSubmit = false) => {
       if (isSubmittingRef.current) return;
@@ -149,18 +142,20 @@ export default function ExamPage() {
       setSubmissionError(null);
 
       try {
+        const payload = {
+          studentName: studentName?.trim() || "Siswa",
+          studentClass: studentClass?.trim() || "Kelas",
+          studentSection: studentSection?.trim() || "",
+          startedAt: startedAt || new Date().toISOString(),
+          autoSubmitted: isAutoSubmit,
+          answers: answers || {},
+          focusEvents: focusEvents || [],
+        };
+
         const res = await fetch("/api/submissions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            studentName,
-            studentClass,
-            studentSection,
-            startedAt: startedAt || new Date().toISOString(),
-            autoSubmitted: isAutoSubmit,
-            answers,
-            focusEvents,
-          }),
+          body: JSON.stringify(payload),
         });
 
         const data = await res.json();
@@ -178,41 +173,13 @@ export default function ExamPage() {
         console.error("Submission failed:", err);
         setSubmissionError(message);
         setStage("exam");
-        toast.error("Gagal mengirim ujian. Silakan periksa koneksi dan coba lagi.", {
+        toast.error(`Gagal mengirim ujian: ${message}`, {
           id: "submit-status",
         });
       }
     },
     [studentName, studentClass, studentSection, startedAt, answers, focusEvents]
   );
-
-  // Timer countdown: purely ticks down every second
-  useEffect(() => {
-    if (stage !== "exam") return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 0) return 0;
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [stage]);
-
-  // Auto-submit trigger: fires strictly ONCE when time hits 0
-  useEffect(() => {
-    if (stage !== "exam") return;
-
-    if (timeLeft <= 0 && !hasAutoSubmittedRef.current) {
-      hasAutoSubmittedRef.current = true;
-      toast.warning("Waktu ujian telah habis! Sistem mengirimkan jawaban Anda secara otomatis...", {
-        id: "time-up-warning",
-        duration: 10000,
-      });
-      handleSubmitExam(true);
-    }
-  }, [stage, timeLeft, handleSubmitExam]);
 
   // Focus event tracking (Document Visibility & Window Blur)
   useEffect(() => {
@@ -283,7 +250,6 @@ export default function ExamPage() {
 
     const now = new Date().toISOString();
     setStartedAt(now);
-    setTimeLeft(DEFAULT_DURATION_SECONDS);
     setStage("exam");
     toast.success("Ujian dimulai. Selamat mengerjakan!");
   };
@@ -308,13 +274,6 @@ export default function ExamPage() {
   const markedCount = Object.values(markedQuestions).filter(Boolean).length;
   const unansweredCount = QUESTIONS.length - answeredCount;
   const progressPercent = Math.round((answeredCount / QUESTIONS.length) * 100);
-
-  // Time format helper
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
 
   // Current question object
   const currentQ: Question = QUESTIONS[currentIndex];
@@ -403,7 +362,7 @@ export default function ExamPage() {
                   <strong>Tepat 75 Soal:</strong> Mencakup seluruh 26 pelajaran Al-Nahw al-Wadih Juz 2 (Pilihan Ganda, Benar/Salah, Isian Singkat, Klasifikasi, Tashkeel, Transformasi, Koreksi, dan I‘rab).
                 </li>
                 <li>
-                  <strong>Durasi 90 Menit:</strong> Timer akan berjalan otomatis begitu Anda menekan tombol &ldquo;Mulai Ujian Sekarang&rdquo;. Jika waktu habis, sistem akan menyimpan dan mengirimkan jawaban secara otomatis.
+                  <strong>Pengerjaan Mandiri & Fleksibel:</strong> Anda dapat mengerjakan soal dengan tenang tanpa batasan timer countdown otomatis. Jawaban berapapun jumlahnya dapat Anda kirimkan kapan saja setelah melakukan konfirmasi.
                 </li>
                 <li>
                   <strong>Penilaian Campuran:</strong> Skor objektif (46 soal) akan langsung dihitung saat pengiriman, sedangkan 29 soal uraian/tashkeel/i‘rab akan dinilai manual oleh guru.
@@ -429,7 +388,7 @@ export default function ExamPage() {
               </div>
               <Button type="submit" size="lg" className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white gap-2 font-semibold shadow">
                 <Sparkles className="w-4 h-4" />
-                Mulai Ujian Sekarang (90 Menit)
+                Mulai Pengerjaan Ujian
               </Button>
             </CardFooter>
           </Card>
@@ -490,30 +449,20 @@ export default function ExamPage() {
             </div>
           </div>
 
-          {/* Timer and Quick Stats */}
+          {/* Quick Stats & Submit */}
           <div className="flex items-center gap-3">
-            <div
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-mono font-bold text-sm ${
-                timeLeft < 300
-                  ? "bg-destructive/10 border-destructive/30 text-destructive animate-pulse"
-                  : "bg-background border-border text-foreground"
-              }`}
-            >
-              <Clock className="w-4 h-4 text-emerald-700" />
-              <span>{formatTime(timeLeft)}</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-background border-border text-xs font-semibold text-foreground">
+              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+              <span>{answeredCount} / 75 Terjawab</span>
             </div>
 
             <Button
               size="sm"
               onClick={() => setIsSubmitDialogOpen(true)}
-              className={`font-semibold gap-1.5 shadow-sm text-white transition-all ${
-                answeredCount === 75
-                  ? "bg-emerald-800 hover:bg-emerald-900 ring-2 ring-emerald-400 animate-pulse"
-                  : "bg-emerald-800 hover:bg-emerald-900"
-              }`}
+              className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold gap-1.5 shadow-sm"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{answeredCount === 75 ? "Kirim Ujian (75 Selesai)" : "Kirim Ujian"}</span>
+              <span>Kirim Ujian</span>
             </Button>
           </div>
         </div>
@@ -552,32 +501,6 @@ export default function ExamPage() {
               <span>Kirim Jawaban Sekarang</span>
             </Button>
           </div>
-        )}
-
-        {/* Banner: Waktu Ujian Selesai (00:00) */}
-        {timeLeft <= 0 && (
-          <Alert variant="amber" className="shadow-sm border-amber-500 bg-amber-50/90 dark:bg-amber-950/40">
-            <Clock className="h-4 w-4 text-amber-700" />
-            <AlertTitle className="text-xs font-bold text-amber-900 dark:text-amber-200">
-              Waktu Pengerjaan Ujian Telah Selesai (00:00)
-            </AlertTitle>
-            <AlertDescription className="text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-amber-900/90 dark:text-amber-200/90 mt-1">
-              <span>
-                Durasi 90 menit ujian Anda telah selesai. Silakan klik tombol di samping untuk segera mengirim lembar jawaban Anda ke guru.
-              </span>
-              <Button
-                size="sm"
-                onClick={() => {
-                  isSubmittingRef.current = false;
-                  handleSubmitExam(true);
-                }}
-                className="bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs gap-1.5 shrink-0 shadow-sm"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Kirim Jawaban Sekarang</span>
-              </Button>
-            </AlertDescription>
-          </Alert>
         )}
 
         {/* Transparent Focus Notice Banner if triggered */}
@@ -758,21 +681,19 @@ export default function ExamPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              {answeredCount === 75 && currentIndex < QUESTIONS.length - 1 && (
-                <Button
-                  onClick={() => setIsSubmitDialogOpen(true)}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow font-bold"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Kirim Ujian (75 Selesai)</span>
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                onClick={() => setIsSubmitDialogOpen(true)}
+                className="border-emerald-700 text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 font-semibold gap-1.5"
+              >
+                <Send className="w-4 h-4" />
+                <span>Kirim Ujian ({answeredCount}/75)</span>
+              </Button>
 
               {currentIndex < QUESTIONS.length - 1 ? (
                 <Button
-                  variant={answeredCount === 75 ? "outline" : "default"}
                   onClick={() => setCurrentIndex((prev) => Math.min(QUESTIONS.length - 1, prev + 1))}
-                  className={answeredCount === 75 ? "gap-1.5" : "bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5"}
+                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow-sm font-semibold"
                 >
                   <span>Berikutnya</span>
                   <ChevronRight className="w-4 h-4" />
@@ -780,10 +701,10 @@ export default function ExamPage() {
               ) : (
                 <Button
                   onClick={() => setIsSubmitDialogOpen(true)}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow font-bold"
+                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow-sm font-bold"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Kirim Jawaban</span>
+                  <span>Selesai & Kirim</span>
                 </Button>
               )}
             </div>
@@ -807,16 +728,14 @@ export default function ExamPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {answeredCount === 75 && (
-              <Button
-                size="sm"
-                onClick={() => setIsSubmitDialogOpen(true)}
-                className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs h-7 gap-1"
-              >
-                <Send className="w-3 h-3" />
-                <span>Kirim Ujian</span>
-              </Button>
-            )}
+            <Button
+              size="sm"
+              onClick={() => setIsSubmitDialogOpen(true)}
+              className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs h-7 gap-1"
+            >
+              <Send className="w-3 h-3" />
+              <span>Kirim Ujian</span>
+            </Button>
             <Button
               variant="ghost"
               size="sm"

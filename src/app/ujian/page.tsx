@@ -76,6 +76,10 @@ export default function ExamPage() {
   const blurTimeRef = useRef<number | null>(null);
   const isBlurredRef = useRef<boolean>(false);
 
+  // Submission Guard Refs
+  const isSubmittingRef = useRef<boolean>(false);
+  const hasAutoSubmittedRef = useRef<boolean>(false);
+
   // Modals
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
   const [isNavGridOpen, setIsNavGridOpen] = useState(false);
@@ -138,6 +142,9 @@ export default function ExamPage() {
   // Submit Handler Definition (declared before timer/blur listeners)
   const handleSubmitExam = useCallback(
     async (isAutoSubmit = false) => {
+      if (isSubmittingRef.current) return;
+      isSubmittingRef.current = true;
+
       setStage("submitting");
       setSubmissionError(null);
 
@@ -163,37 +170,49 @@ export default function ExamPage() {
 
         // Clean up storage
         localStorage.removeItem(LOCAL_STORAGE_KEY);
-        toast.success("Ujian berhasil dikirim!");
+        toast.success("Ujian berhasil dikirim!", { id: "submit-status" });
         window.location.href = `/tanda-terima/${data.submission.id}`;
       } catch (err: unknown) {
+        isSubmittingRef.current = false;
         const message = err instanceof Error ? err.message : "Koneksi terganggu.";
         console.error("Submission failed:", err);
         setSubmissionError(message);
         setStage("exam");
-        toast.error("Gagal mengirim ujian. Silakan periksa koneksi dan coba lagi.");
+        toast.error("Gagal mengirim ujian. Silakan periksa koneksi dan coba lagi.", {
+          id: "submit-status",
+        });
       }
     },
-    [studentName, studentClass, studentSection, startedAt, answers, focusEvents, router]
+    [studentName, studentClass, studentSection, startedAt, answers, focusEvents]
   );
 
-  // Timer countdown
+  // Timer countdown: purely ticks down every second
   useEffect(() => {
     if (stage !== "exam") return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          toast.warning("Waktu ujian telah habis! Sistem mengirimkan jawaban Anda secara otomatis...");
-          handleSubmitExam(true);
-          return 0;
-        }
+        if (prev <= 0) return 0;
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [stage, handleSubmitExam]);
+  }, [stage]);
+
+  // Auto-submit trigger: fires strictly ONCE when time hits 0
+  useEffect(() => {
+    if (stage !== "exam") return;
+
+    if (timeLeft <= 0 && !hasAutoSubmittedRef.current) {
+      hasAutoSubmittedRef.current = true;
+      toast.warning("Waktu ujian telah habis! Sistem mengirimkan jawaban Anda secara otomatis...", {
+        id: "time-up-warning",
+        duration: 10000,
+      });
+      handleSubmitExam(true);
+    }
+  }, [stage, timeLeft, handleSubmitExam]);
 
   // Focus event tracking (Document Visibility & Window Blur)
   useEffect(() => {
@@ -535,6 +554,32 @@ export default function ExamPage() {
           </div>
         )}
 
+        {/* Banner: Waktu Ujian Selesai (00:00) */}
+        {timeLeft <= 0 && (
+          <Alert variant="amber" className="shadow-sm border-amber-500 bg-amber-50/90 dark:bg-amber-950/40">
+            <Clock className="h-4 w-4 text-amber-700" />
+            <AlertTitle className="text-xs font-bold text-amber-900 dark:text-amber-200">
+              Waktu Pengerjaan Ujian Telah Selesai (00:00)
+            </AlertTitle>
+            <AlertDescription className="text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-amber-900/90 dark:text-amber-200/90 mt-1">
+              <span>
+                Durasi 90 menit ujian Anda telah selesai. Silakan klik tombol di samping untuk segera mengirim lembar jawaban Anda ke guru.
+              </span>
+              <Button
+                size="sm"
+                onClick={() => {
+                  isSubmittingRef.current = false;
+                  handleSubmitExam(true);
+                }}
+                className="bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs gap-1.5 shrink-0 shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Kirim Jawaban Sekarang</span>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Transparent Focus Notice Banner if triggered */}
         {focusNotice && (
           <Alert variant="amber" className="shadow-sm">
@@ -793,7 +838,10 @@ export default function ExamPage() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => handleSubmitExam(false)}
+                onClick={() => {
+                  isSubmittingRef.current = false;
+                  handleSubmitExam(false);
+                }}
                 className="ml-3 gap-1 bg-background text-foreground"
               >
                 <RotateCcw className="w-3 h-3" /> Coba Kirim Ulang
@@ -973,6 +1021,7 @@ export default function ExamPage() {
             <AlertDialogCancel>Periksa Kembali</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
+                isSubmittingRef.current = false;
                 setIsSubmitDialogOpen(false);
                 handleSubmitExam(false);
               }}

@@ -431,8 +431,8 @@ export default function ExamPage() {
                 </li>
                 <li>
                   <strong>Menjaga Kejujuran & Memenuhi Syarat (Hadis):</strong> Wajib menjunjung tinggi sifat amanah dan menaati aturan ujian. Rasulullah ﷺ bersabda:
-                  <div className="my-1.5 p-2 rounded-md bg-muted/50 border border-border/80 flex items-center justify-between gap-3">
-                    <span className="arabic-inline text-base font-bold text-emerald-800 dark:text-emerald-300">
+                  <div className="my-1.5 p-2.5 rounded-md bg-muted/60 border border-border/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
+                    <span className="arabic-inline text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-300">
                       «الْمُؤْمِنُونَ عَلَى شُرُوطِهِمْ»
                     </span>
                     <span className="text-xs italic text-muted-foreground">
@@ -521,41 +521,44 @@ export default function ExamPage() {
         ))}
       </div>
       {/* Sticky Exam Header */}
-      <div className="sticky top-16 z-30 w-full border-b bg-card/95 backdrop-blur shadow-sm">
-        <div className="container mx-auto max-w-6xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="sticky top-14 sm:top-16 z-30 w-full border-b bg-card/95 backdrop-blur shadow-sm">
+        <div className="container mx-auto max-w-6xl px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2">
           {/* Student Info & Question Indicator */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 min-w-0">
             <button
               onClick={() => setIsNavGridOpen(true)}
-              className="px-3 py-1.5 rounded-lg border border-input bg-background hover:bg-muted text-xs font-medium flex items-center gap-1.5 transition-colors"
+              className="px-2.5 py-1.5 rounded-lg border border-input bg-background hover:bg-muted text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0 shadow-2xs"
             >
-              <Grid className="w-4 h-4 text-emerald-800" />
-              <span>Daftar Soal</span>
-              <Badge variant="secondary" className="ml-1 text-[11px] px-1.5 py-0">
+              <Grid className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
+              <span className="hidden sm:inline">Daftar Soal</span>
+              <span className="sm:hidden">Soal</span>
+              <Badge variant="secondary" className="text-[11px] px-1.5 py-0 h-4 font-mono">
                 {currentIndex + 1}/{QUESTIONS.length}
               </Badge>
             </button>
 
-            <div className="hidden sm:block text-xs">
-              <span className="font-semibold text-foreground">{studentName}</span>
-              <span className="text-muted-foreground"> ({studentClass})</span>
+            <div className="text-xs truncate max-w-[90px] xs:max-w-[130px] sm:max-w-[200px]">
+              <span className="font-semibold text-foreground truncate block">{studentName}</span>
+              <span className="text-[11px] text-muted-foreground hidden md:inline"> ({studentClass})</span>
             </div>
           </div>
 
           {/* Quick Stats & Submit */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-background border-border text-xs font-semibold text-foreground">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-              <span>{answeredCount} / {QUESTIONS.length} Terjawab</span>
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            <div className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-md border bg-background text-[11px] sm:text-xs font-semibold text-foreground">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <span>{answeredCount}/{QUESTIONS.length}</span>
+              <span className="hidden sm:inline"> Terjawab</span>
             </div>
 
             <Button
               size="sm"
               onClick={() => setIsSubmitDialogOpen(true)}
-              className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold gap-1.5 shadow-sm"
+              className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold gap-1 text-xs px-2.5 sm:px-3 h-8 shadow-xs"
             >
-              <Send className="w-3.5 h-3.5" />
-              <span>Kirim Ujian</span>
+              <Send className="w-3 h-3" />
+              <span>Kirim</span>
+              <span className="hidden sm:inline"> Ujian</span>
             </Button>
           </div>
         </div>
@@ -565,19 +568,19 @@ export default function ExamPage() {
       </div>
 
       {/* Main Exam Content Area */}
-      <div className="container mx-auto max-w-4xl px-4 py-6 sm:py-8 space-y-6">
+      <div className="container mx-auto max-w-4xl px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6">
         {/* Banner: Seluruh Soal Selesai Dijawab */}
         {answeredCount === QUESTIONS.length && (
-          <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border-2 border-emerald-600 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-sm">
-                <CheckCircle2 className="w-7 h-7 text-emerald-200" />
+          <div className="p-3.5 sm:p-5 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border-2 border-emerald-600 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5 sm:mt-0">
+                <CheckCircle2 className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-200" />
               </div>
               <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-200/90 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 text-[11px] font-bold uppercase tracking-wider mb-1">
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-200/90 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1">
                   <Sparkles className="w-3 h-3" /> {QUESTIONS.length} dari {QUESTIONS.length} Soal Selesai Terjawab
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                <h3 className="text-sm sm:text-lg font-bold text-foreground">
                   Alhamdulillah, seluruh {QUESTIONS.length} soal telah selesai dijawab!
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -588,7 +591,7 @@ export default function ExamPage() {
             <Button
               size="lg"
               onClick={() => setIsSubmitDialogOpen(true)}
-              className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white font-bold gap-2 px-6 shadow-md shrink-0 py-6 text-sm"
+              className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white font-bold gap-2 px-5 sm:px-6 shadow-md shrink-0 py-5 sm:py-6 text-sm"
             >
               <Send className="w-4 h-4" />
               <span>Kirim Jawaban Sekarang</span>
@@ -598,14 +601,14 @@ export default function ExamPage() {
 
         {/* Transparent Focus Notice Banner if triggered */}
         {focusNotice && (
-          <Alert variant="amber" className="shadow-sm">
+          <Alert variant="amber" className="shadow-sm p-3 sm:p-4">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle className="text-xs font-semibold">Catatan Aktivitas Layar</AlertTitle>
-            <AlertDescription className="text-xs flex items-center justify-between">
-              <span>{focusNotice}</span>
+            <AlertDescription className="text-xs flex items-center justify-between gap-2 mt-1">
+              <span className="leading-relaxed">{focusNotice}</span>
               <button
                 onClick={() => setFocusNotice(null)}
-                className="underline ml-2 text-xs font-medium text-amber-900 dark:text-amber-300"
+                className="underline ml-2 text-xs font-semibold text-amber-900 dark:text-amber-300 shrink-0"
               >
                 Tutup
               </button>
@@ -615,22 +618,22 @@ export default function ExamPage() {
 
         {/* Question Card */}
         <Card className="border-border shadow-sm">
-          <CardHeader className="border-b bg-muted/20 pb-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-sm">
+          <CardHeader className="border-b bg-muted/20 p-3.5 sm:p-5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 shadow-2xs">
                   {currentQ.id}
                 </span>
-                <Badge variant="outline" className="text-xs">
-                  Pelajaran {currentQ.babNumber}: {currentQ.pageRef}
+                <Badge variant="outline" className="text-[10px] sm:text-xs px-2 py-0.5">
+                  Bab {currentQ.babNumber}
                 </Badge>
                 <Badge
                   variant={currentQ.gradingType === "otomatis" ? "emerald" : "amber"}
-                  className="text-xs"
+                  className="text-[10px] sm:text-xs px-2 py-0.5"
                 >
                   {currentQ.type.replace("_", " ").toUpperCase()}
                 </Badge>
-                <Badge variant="secondary" className="text-xs font-mono">
+                <Badge variant="secondary" className="text-[10px] sm:text-xs font-mono px-2 py-0.5">
                   {currentQ.points} Poin
                 </Badge>
               </div>
@@ -639,37 +642,37 @@ export default function ExamPage() {
                 variant={markedQuestions[currentQ.id] ? "default" : "outline"}
                 size="sm"
                 onClick={toggleMarkQuestion}
-                className={`text-xs gap-1.5 h-8 ${
+                className={`text-xs gap-1 h-7 sm:h-8 px-2 sm:px-2.5 shrink-0 ${
                   markedQuestions[currentQ.id]
                     ? "bg-amber-600 hover:bg-amber-700 text-white"
                     : "text-muted-foreground"
                 }`}
               >
-                <Bookmark className="w-3.5 h-3.5" />
-                <span>{markedQuestions[currentQ.id] ? "Ditandai" : "Tandai Soal"}</span>
+                <Bookmark className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span>{markedQuestions[currentQ.id] ? "Ditandai" : "Tandai"}</span>
               </Button>
             </div>
 
-            <p className="text-xs font-medium text-emerald-800 dark:text-emerald-400 mt-2">
+            <p className="text-xs font-medium text-emerald-800 dark:text-emerald-400 mt-2 line-clamp-1">
               Bab: {currentQ.babTitle}
             </p>
           </CardHeader>
 
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-3.5 sm:p-6 space-y-4 sm:space-y-6">
             {/* Indonesian Instruction */}
-            <div className="text-sm font-medium text-foreground bg-muted/30 p-3.5 rounded-lg border border-border/60">
+            <div className="text-xs sm:text-sm font-medium text-foreground bg-muted/35 p-3 sm:p-3.5 rounded-lg border border-border/60 leading-relaxed">
               {currentQ.instruction}
             </div>
 
             {/* Arabic Stimulus / Prompt */}
-            <div className="p-6 rounded-xl bg-card border border-border/80 text-right">
-              <div className="arabic-text text-2xl sm:text-3xl font-bold text-foreground leading-[2.2]">
+            <div className="p-4 sm:p-6 rounded-xl bg-card border border-border/80 text-right overflow-x-auto">
+              <div className="arabic-text text-xl sm:text-3xl font-bold text-foreground leading-[2.2] sm:leading-[2.2] break-words">
                 {currentQ.prompt}
               </div>
             </div>
 
             {/* Input by Question Type */}
-            <div className="pt-2">
+            <div className="pt-1 sm:pt-2">
               {/* 1. Pilihan Ganda & Benar / Salah & Identifikasi */}
               {(currentQ.type === "pilihan_ganda" ||
                 currentQ.type === "benar_salah" ||
@@ -678,26 +681,26 @@ export default function ExamPage() {
                   <RadioGroup
                     value={answers[currentQ.id] || ""}
                     onValueChange={handleAnswerChange}
-                    className="space-y-3"
+                    className="space-y-2.5 sm:space-y-3"
                   >
                     {currentQ.options.map((opt, i) => {
                       const isSelected = answers[currentQ.id] === opt;
                       return (
                         <label
                           key={i}
-                          className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                          className={`flex items-start justify-between p-3 sm:p-4 rounded-xl border cursor-pointer transition-all gap-3 ${
                             isSelected
                               ? "bg-emerald-50/80 border-emerald-600 dark:bg-emerald-950/30 text-foreground shadow-sm ring-1 ring-emerald-600"
-                              : "border-border hover:bg-muted/40"
+                              : "border-border hover:bg-muted/40 active:bg-muted/60"
                           }`}
                         >
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0 pt-1">
                             <RadioGroupItem value={opt} id={`opt-${currentQ.id}-${i}`} />
-                            <span className="font-mono text-xs text-muted-foreground">
+                            <span className="font-mono text-xs font-semibold text-muted-foreground">
                               {String.fromCharCode(65 + i)}.
                             </span>
                           </div>
-                          <span className="arabic-text text-lg sm:text-xl font-medium text-right text-foreground pr-2">
+                          <span className="arabic-text text-base sm:text-xl font-medium text-right text-foreground pr-1 flex-1 min-w-0 break-words leading-[2.0]">
                             {opt}
                           </span>
                         </label>
@@ -717,10 +720,10 @@ export default function ExamPage() {
                     value={answers[currentQ.id] || ""}
                     onChange={(e) => handleAnswerChange(e.target.value)}
                     placeholder="اكتب الإجابة هنا..."
-                    className="arabic-text text-xl h-14 px-4 text-right"
+                    className="arabic-text text-lg sm:text-xl h-12 sm:h-14 px-3 sm:px-4 text-right"
                     dir="rtl"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[11px] sm:text-xs text-muted-foreground">
                     * Sistem menerima variasi bentuk penulisan tanpa dan dengan harakat standar.
                   </p>
                 </div>
@@ -734,9 +737,9 @@ export default function ExamPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-xs text-muted-foreground">
                     <Label htmlFor={`textarea-${currentQ.id}`}>
-                      Tulis jawaban uraian/analisis Anda di bawah ini (akan diperiksa guru):
+                      Tulis jawaban uraian/analisis Anda:
                     </Label>
-                    <Badge variant="amber" className="text-[10px]">
+                    <Badge variant="amber" className="text-[10px] px-1.5 py-0">
                       Koreksi Guru
                     </Badge>
                   </div>
@@ -746,11 +749,11 @@ export default function ExamPage() {
                     onChange={(e) => handleAnswerChange(e.target.value)}
                     placeholder="اكتب الإجابة والشرح هنا..."
                     rows={4}
-                    className="arabic-text text-lg sm:text-xl p-4 text-right min-h-[120px]"
+                    className="arabic-text text-base sm:text-xl p-3 sm:p-4 text-right min-h-[110px]"
                     dir="rtl"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    * Jawaban Anda akan dinilai langsung oleh guru berdasarkan rubrik kaidah Al-Nahw al-Wadih.
+                  <p className="text-[11px] sm:text-xs text-muted-foreground">
+                    * Jawaban akan diperiksa dan dinilai langsung oleh guru.
                   </p>
                 </div>
               )}
@@ -758,95 +761,85 @@ export default function ExamPage() {
           </CardContent>
 
           {/* Card Navigation Footer */}
-          <CardFooter className="border-t bg-muted/10 p-4 sm:p-6 flex items-center justify-between gap-3">
+          <CardFooter className="border-t bg-muted/10 p-3 sm:p-5 flex items-center justify-between gap-2">
             <Button
               variant="outline"
               onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
               disabled={currentIndex === 0}
-              className="gap-1.5"
+              className="gap-1 sm:gap-1.5 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Sebelumnya</span>
             </Button>
 
-            <div className="text-xs text-muted-foreground hidden sm:block">
-              Soal {currentIndex + 1} dari {QUESTIONS.length}
+            <div className="text-xs font-semibold text-muted-foreground">
+              <span className="text-foreground">{currentIndex + 1}</span> / {QUESTIONS.length}
             </div>
 
-            <div className="flex items-center gap-2">
+            {currentIndex < QUESTIONS.length - 1 ? (
               <Button
-                variant="outline"
-                onClick={() => setIsSubmitDialogOpen(true)}
-                className="border-emerald-700 text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 font-semibold gap-1.5"
+                onClick={() => setCurrentIndex((prev) => Math.min(QUESTIONS.length - 1, prev + 1))}
+                className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1 sm:gap-1.5 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 shadow-sm font-semibold"
               >
-                <Send className="w-4 h-4" />
-                <span>Kirim Ujian ({answeredCount}/{QUESTIONS.length})</span>
+                <span>Berikutnya</span>
+                <ChevronRight className="w-4 h-4" />
               </Button>
-
-              {currentIndex < QUESTIONS.length - 1 ? (
-                <Button
-                  onClick={() => setCurrentIndex((prev) => Math.min(QUESTIONS.length - 1, prev + 1))}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow-sm font-semibold"
-                >
-                  <span>Berikutnya</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => setIsSubmitDialogOpen(true)}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1.5 shadow-sm font-bold"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Selesai & Kirim</span>
-                </Button>
-              )}
-            </div>
+            ) : (
+              <Button
+                onClick={() => setIsSubmitDialogOpen(true)}
+                className="bg-emerald-800 hover:bg-emerald-900 text-white gap-1 sm:gap-1.5 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 shadow-sm font-bold"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Selesai & Kirim</span>
+              </Button>
+            )}
           </CardFooter>
         </Card>
 
         {/* Quick Nav Bar below Question */}
-        <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg border bg-card text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-3.5 rounded-xl border bg-card text-xs text-muted-foreground shadow-2xs">
+          <div className="flex items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
+            <span className="flex items-center gap-1.5 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-              <strong>{answeredCount}</strong> Terjawab
+              <strong className="text-foreground">{answeredCount}</strong> Terjawab
             </span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 font-medium">
               <Bookmark className="w-3.5 h-3.5 text-amber-600" />
-              <strong>{markedCount}</strong> Ditandai
+              <strong className="text-foreground">{markedCount}</strong> Ditandai
             </span>
-            <span>
-              <strong>{unansweredCount}</strong> Belum
+            <span className="font-medium">
+              <strong className="text-foreground">{unansweredCount}</strong> Belum
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsNavGridOpen(true)}
+              className="text-xs text-emerald-800 hover:text-emerald-900 font-semibold h-8 gap-1 flex-1 sm:flex-initial"
+            >
+              <Grid className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Daftar {QUESTIONS.length} Soal</span>
+            </Button>
             <Button
               size="sm"
               onClick={() => setIsSubmitDialogOpen(true)}
-              className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs h-7 gap-1"
+              className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs h-8 gap-1 flex-1 sm:flex-initial shadow-xs"
             >
               <Send className="w-3 h-3" />
               <span>Kirim Ujian</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsNavGridOpen(true)}
-              className="text-xs text-emerald-800 hover:text-emerald-900 font-medium h-7"
-            >
-              Buka Navigasi Grid (1–{QUESTIONS.length})
             </Button>
           </div>
         </div>
 
         {/* Connection or Submission Error */}
         {submissionError && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="p-3 sm:p-4">
             <AlertTriangle className="w-4 h-4" />
-            <AlertTitle>Gagal Menyimpan Ujian</AlertTitle>
-            <AlertDescription className="flex items-center justify-between">
-              <span>{submissionError}</span>
+            <AlertTitle className="text-xs sm:text-sm font-bold">Gagal Menyimpan Ujian</AlertTitle>
+            <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-1">
+              <span className="text-xs leading-relaxed">{submissionError}</span>
               <Button
                 size="sm"
                 variant="outline"
@@ -854,7 +847,7 @@ export default function ExamPage() {
                   isSubmittingRef.current = false;
                   handleSubmitExam(false);
                 }}
-                className="ml-3 gap-1 bg-background text-foreground"
+                className="gap-1 bg-background text-foreground h-8 text-xs shrink-0"
               >
                 <RotateCcw className="w-3 h-3" /> Coba Kirim Ulang
               </Button>
@@ -865,20 +858,20 @@ export default function ExamPage() {
 
       {/* Modal: Navigasi Nomor Soal Grid */}
       <Dialog open={isNavGridOpen} onOpenChange={setIsNavGridOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogContent className="w-[94vw] sm:max-w-2xl max-h-[88vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-2xl">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-lg font-bold">Navigasi {QUESTIONS.length} Nomor Soal</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg font-bold">Navigasi {QUESTIONS.length} Nomor Soal</DialogTitle>
             <DialogDescription className="text-xs">
               Klik nomor soal untuk melompat langsung ke soal tersebut.
             </DialogDescription>
           </DialogHeader>
 
           {/* Filter Bar in Dialog */}
-          <div className="flex items-center gap-2 pb-3 border-b text-xs">
-            <span className="text-muted-foreground">Filter:</span>
+          <div className="flex items-center gap-1.5 pb-2.5 border-b text-xs overflow-x-auto">
+            <span className="text-muted-foreground shrink-0">Filter:</span>
             <button
               onClick={() => setNavFilter("all")}
-              className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+              className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors shrink-0 ${
                 navFilter === "all" ? "bg-emerald-800 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -886,15 +879,15 @@ export default function ExamPage() {
             </button>
             <button
               onClick={() => setNavFilter("unanswered")}
-              className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+              className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors shrink-0 ${
                 navFilter === "unanswered" ? "bg-emerald-800 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
-              Belum Dijawab ({unansweredCount})
+              Belum ({unansweredCount})
             </button>
             <button
               onClick={() => setNavFilter("marked")}
-              className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+              className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors shrink-0 ${
                 navFilter === "marked" ? "bg-emerald-800 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -903,8 +896,8 @@ export default function ExamPage() {
           </div>
 
           {/* Numbers Grid */}
-          <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
-            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+          <div className="flex-1 overflow-y-auto py-3 custom-scrollbar">
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5 sm:gap-2">
               {QUESTIONS.map((q, idx) => {
                 const isAnswered = Boolean(answers[q.id]?.trim());
                 const isMarked = Boolean(markedQuestions[q.id]);
@@ -930,7 +923,7 @@ export default function ExamPage() {
                       setCurrentIndex(idx);
                       setIsNavGridOpen(false);
                     }}
-                    className={`h-10 rounded-lg border text-xs flex flex-col items-center justify-center transition-all ${btnClass}`}
+                    className={`h-9 sm:h-10 rounded-lg border text-xs flex flex-col items-center justify-center transition-all ${btnClass}`}
                   >
                     <span>{q.id}</span>
                     {isMarked && <div className="w-1.5 h-1.5 rounded-full bg-amber-600 mt-0.5" />}
@@ -940,22 +933,22 @@ export default function ExamPage() {
             </div>
           </div>
 
-          {/* Legend and Submit Actions */}
-          <div className="border-t pt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-            <div className="flex items-center gap-3">
+          {/* Legend and Actions */}
+          <div className="border-t pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center justify-around w-full sm:w-auto gap-2 text-[11px]">
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" /> Terjawab ({answeredCount})
+                <div className="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-400" /> Terjawab ({answeredCount})
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-amber-100 border border-amber-500" /> Ditandai ({markedCount})
+                <div className="w-2.5 h-2.5 rounded bg-amber-100 border border-amber-500" /> Ditandai ({markedCount})
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-card border border-border" /> Belum ({unansweredCount})
+                <div className="w-2.5 h-2.5 rounded bg-card border border-border" /> Belum ({unansweredCount})
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => setIsNavGridOpen(false)}>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button size="sm" variant="outline" className="flex-1 sm:flex-initial h-8 text-xs" onClick={() => setIsNavGridOpen(false)}>
                 Tutup
               </Button>
               <Button
@@ -964,18 +957,10 @@ export default function ExamPage() {
                   setIsNavGridOpen(false);
                   setIsSubmitDialogOpen(true);
                 }}
-                className={`text-white font-bold gap-1.5 shadow-sm ${
-                  answeredCount === QUESTIONS.length
-                    ? "bg-emerald-800 hover:bg-emerald-900 ring-2 ring-emerald-400"
-                    : "bg-emerald-800 hover:bg-emerald-900"
-                }`}
+                className="flex-1 sm:flex-initial h-8 text-xs bg-emerald-800 hover:bg-emerald-900 text-white font-bold gap-1 shadow-xs"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span>
-                  {answeredCount === QUESTIONS.length
-                    ? `Kirim Ujian (${QUESTIONS.length}/${QUESTIONS.length} Selesai)`
-                    : `Kirim Ujian (${answeredCount}/${QUESTIONS.length})`}
-                </span>
+                <Send className="w-3 h-3" />
+                <span>Kirim Ujian</span>
               </Button>
             </div>
           </div>
@@ -984,20 +969,24 @@ export default function ExamPage() {
 
       {/* AlertDialog: Konfirmasi Pengiriman Ujian */}
       <AlertDialog open={isSubmitDialogOpen} onOpenChange={setIsSubmitDialogOpen}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold">
+            <AlertDialogTitle className="text-base sm:text-lg font-bold">
               Konfirmasi Pengiriman Ujian
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm space-y-3">
+            <AlertDialogDescription className="text-xs sm:text-sm space-y-3">
               <p>
                 Apakah Anda yakin ingin menyelesaikan dan mengirimkan lembar jawaban ujian nahwu Anda sekarang?
               </p>
 
-              <div className="p-3.5 rounded-lg bg-muted/50 border border-border space-y-1.5 text-xs text-foreground">
+              <div className="p-3 rounded-lg bg-muted/50 border border-border space-y-1.5 text-xs text-foreground">
                 <div className="flex justify-between">
                   <span>Nama Peserta:</span>
-                  <strong className="text-emerald-900">{studentName}</strong>
+                  <strong className="text-emerald-900 dark:text-emerald-300 truncate max-w-[160px]">{studentName}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Kelas:</span>
+                  <strong>{studentClass}</strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Soal Terjawab:</span>
@@ -1005,7 +994,7 @@ export default function ExamPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Soal Belum Dijawab:</span>
-                  <span className={unansweredCount > 0 ? "text-amber-700 font-bold" : ""}>
+                  <span className={unansweredCount > 0 ? "text-amber-700 dark:text-amber-400 font-bold" : ""}>
                     {unansweredCount} soal
                   </span>
                 </div>
@@ -1016,28 +1005,28 @@ export default function ExamPage() {
               </div>
 
               {unansweredCount > 0 && (
-                <div className="p-2.5 rounded bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-700 mt-0.5" />
+                <div className="p-2.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-700 dark:text-amber-400 mt-0.5" />
                   <span>
                     Masih terdapat <strong>{unansweredCount} soal</strong> yang belum Anda isi. Soal yang tidak terisi akan dihitung sebagai 0 poin.
                   </span>
                 </div>
               )}
 
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
                 Setelah dikirim, jawaban tidak dapat diubah kembali.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Periksa Kembali</AlertDialogCancel>
+          <AlertDialogFooter className="flex-row gap-2 justify-end sm:justify-end mt-2">
+            <AlertDialogCancel className="flex-1 sm:flex-initial m-0 h-9 text-xs">Periksa Kembali</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 isSubmittingRef.current = false;
                 setIsSubmitDialogOpen(false);
                 handleSubmitExam(false);
               }}
-              className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold"
+              className="flex-1 sm:flex-initial m-0 h-9 text-xs bg-emerald-800 hover:bg-emerald-900 text-white font-semibold"
             >
               Ya, Kirim Ujian
             </AlertDialogAction>

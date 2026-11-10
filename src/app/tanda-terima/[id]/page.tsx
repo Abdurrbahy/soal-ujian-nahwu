@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   AlertCircle,
   HelpCircle,
+  FileDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -169,13 +170,13 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
                   <span className="text-xs font-semibold text-emerald-900 dark:text-emerald-200">
                     Skor Objektif (Otomatis)
                   </span>
-                  <Badge variant="emerald" className="text-[10px]">46 Soal</Badge>
+                  <Badge variant="emerald" className="text-[10px]">40 Soal</Badge>
                 </div>
                 <div className="text-2xl font-extrabold text-emerald-900 dark:text-emerald-200">
                   {data.autoScore} <span className="text-xs font-normal text-muted-foreground">/ {data.maxAutoScore} Poin</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Dihitung instan dari soal Pilihan Ganda, Benar/Salah, Isian Singkat, & Identifikasi.
+                  Dihitung instan dari soal Pilihan Ganda, Benar/Salah, & Isian Singkat.
                 </p>
               </div>
 
@@ -185,7 +186,7 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
                   <span className="text-xs font-semibold text-amber-900 dark:text-amber-200">
                     Skor Subjektif (Guru)
                   </span>
-                  <Badge variant="amber" className="text-[10px]">29 Soal</Badge>
+                  <Badge variant="amber" className="text-[10px]">20 Soal</Badge>
                 </div>
                 <div className="text-xl font-bold text-amber-900 dark:text-amber-200">
                   {data.status === "selesai_dinilai" ? (
@@ -202,12 +203,20 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
 
             {/* Total final score if already graded */}
             {data.status === "selesai_dinilai" && (
-              <div className="p-4 rounded-xl bg-primary text-primary-foreground text-center space-y-1">
-                <span className="text-xs font-medium uppercase tracking-wider opacity-90">
+              <div className="p-4 rounded-xl bg-primary text-primary-foreground text-center space-y-2">
+                <span className="text-xs font-medium uppercase tracking-wider opacity-90 block">
                   Skor Akhir Keseluruhan (Telah Dinilai Lengkap)
                 </span>
-                <div className="text-3xl font-black">
+                <div className="text-3xl sm:text-4xl font-black">
                   {data.totalScore} / {data.maxTotalScore} ({data.percentage}%)
+                </div>
+                <div className="pt-1">
+                  <Link href={`/rapor/${data.id}`}>
+                    <Button variant="secondary" size="sm" className="gap-1.5 text-xs font-bold text-emerald-900">
+                      <FileDown className="w-3.5 h-3.5" />
+                      <span>Lihat & Unduh Lembar Rapor Nilai (PDF)</span>
+                    </Button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -226,16 +235,27 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
         </CardContent>
 
         <CardFooter className="border-t bg-muted/10 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-3 print:hidden">
-          <Button
-            variant="outline"
-            onClick={() => window.print()}
-            className="w-full sm:w-auto gap-2 text-xs"
-          >
-            <Printer className="w-4 h-4" /> Cetak / Simpan PDF
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => window.print()}
+              className="flex-1 sm:flex-initial gap-2 text-xs"
+            >
+              <Printer className="w-4 h-4" /> Cetak Resi
+            </Button>
+
+            <Link href={`/rapor/${data.id}`} className="flex-1 sm:flex-initial">
+              <Button
+                variant="outline"
+                className="w-full border-emerald-700 text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 gap-2 text-xs font-semibold"
+              >
+                <FileDown className="w-4 h-4 text-emerald-700" /> Rapor Nilai PDF
+              </Button>
+            </Link>
+          </div>
 
           <Link href="/" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white gap-2 text-xs">
+            <Button className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white gap-2 text-xs font-semibold">
               <Home className="w-4 h-4" /> Kembali ke Beranda
             </Button>
           </Link>

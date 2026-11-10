@@ -116,7 +116,9 @@ export async function GET(req: Request) {
         maxTotalScore: submission.maxTotalScore,
         percentage: submission.percentage,
         status: submission.status,
-        focusEventsCount: submission.focusEvents.length,
+        focusEventsCount: submission.focusEvents?.length || 0,
+        manualGrading: submission.manualGrading || {},
+        answers: submission.answers || {},
       },
     });
   } catch (error) {

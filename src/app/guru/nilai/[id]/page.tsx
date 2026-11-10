@@ -19,6 +19,8 @@ import {
   HelpCircle,
   Sparkles,
   Camera,
+  Printer,
+  FileDown,
 } from "lucide-react";
 import { QUESTIONS } from "@/data/questions";
 import { Submission, ManualGradeItem, Question } from "@/types/exam";
@@ -198,14 +200,26 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
           </p>
         </div>
 
-        <Button
-          onClick={handleSaveGrades}
-          disabled={saving}
-          className="bg-emerald-800 hover:bg-emerald-900 text-white gap-2 shadow-sm shrink-0"
-        >
-          <Save className="w-4 h-4" />
-          <span>{saving ? "Menyimpan..." : "Simpan Penilaian"}</span>
-        </Button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Link href={`/rapor/${id}`} target="_blank">
+            <Button
+              variant="outline"
+              className="border-emerald-700 text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 font-semibold gap-2 shadow-2xs"
+            >
+              <FileDown className="w-4 h-4 text-emerald-700" />
+              <span>Rapor Nilai Siswa (PDF)</span>
+            </Button>
+          </Link>
+
+          <Button
+            onClick={handleSaveGrades}
+            disabled={saving}
+            className="bg-emerald-800 hover:bg-emerald-900 text-white gap-2 shadow-sm"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saving ? "Menyimpan..." : "Simpan Penilaian"}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Student Summary Info & Score Card */}
@@ -243,9 +257,19 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
         {/* Live Score Overview Card */}
         <Card className="border-border shadow-sm md:col-span-2">
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              Akumulasi Nilai Ujian (Otomatis + Manual)
-            </CardTitle>
+            <div>
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Akumulasi Nilai Ujian (Otomatis + Manual)
+              </CardTitle>
+              <Link
+                href={`/rapor/${id}`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 text-xs text-emerald-800 dark:text-emerald-400 hover:underline font-semibold mt-1"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Buka Rapor PDF untuk Siswa &rarr;</span>
+              </Link>
+            </div>
             <Badge
               variant={
                 gradedManualCount === manualQuestions.length
@@ -257,14 +281,14 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
               className="text-xs"
             >
               {gradedManualCount === manualQuestions.length
-                ? "Semua 29 Dinilai"
-                : `${gradedManualCount} / 29 Dinilai`}
+                ? `Semua ${manualQuestions.length} Dinilai`
+                : `${gradedManualCount} / ${manualQuestions.length} Dinilai`}
             </Badge>
           </CardHeader>
           <CardContent className="grid grid-cols-3 gap-4 text-center">
             <div className="p-3 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/30">
               <span className="text-[11px] text-emerald-900 dark:text-emerald-300 font-medium block">
-                Skor Objektif (46 Soal)
+                Skor Objektif ({QUESTIONS.filter(q => q.gradingType === 'otomatis').length} Soal)
               </span>
               <strong className="text-xl sm:text-2xl text-emerald-900 dark:text-emerald-200">
                 {submission.autoScore} <span className="text-xs font-normal text-muted-foreground">/ {submission.maxAutoScore}</span>
@@ -273,7 +297,7 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
 
             <div className="p-3 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-500/30">
               <span className="text-[11px] text-amber-900 dark:text-amber-300 font-medium block">
-                Skor Guru (29 Soal)
+                Skor Guru ({manualQuestions.length} Soal)
               </span>
               <strong className="text-xl sm:text-2xl text-amber-900 dark:text-amber-200">
                 {currentManualScore} <span className="text-xs font-normal text-muted-foreground">/ {submission.maxManualScore}</span>

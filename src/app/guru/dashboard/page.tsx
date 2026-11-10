@@ -24,6 +24,7 @@ import {
   ExternalLink,
   Check,
   FileDown,
+  Printer,
 } from "lucide-react";
 import { Submission, SubmissionStatus } from "@/types/exam";
 import { Button } from "@/components/ui/button";
@@ -673,6 +674,17 @@ export default function TeacherDashboardPage() {
 
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <Link href={`/rapor/${s.id}`} target="_blank">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            title="Unduh / Cetak Rapor Nilai Siswa (PDF)"
+                            className="text-emerald-800 border-emerald-300 hover:bg-emerald-50 text-xs h-8 px-2.5 gap-1"
+                          >
+                            <Printer className="w-3.5 h-3.5 text-emerald-700" />
+                            <span className="hidden xl:inline">Rapor PDF</span>
+                          </Button>
+                        </Link>
                         <Link href={`/guru/nilai/${s.id}`}>
                           <Button size="sm" className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs h-8 gap-1">
                             <Eye className="w-3.5 h-3.5" />
@@ -744,6 +756,22 @@ export default function TeacherDashboardPage() {
                     })}
                   </span>
                   <div className="flex items-center gap-2">
+                    <Link href={`/rapor/${s.id}`} target="_blank">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        title="Rapor PDF"
+                        className="text-emerald-800 border-emerald-300 hover:bg-emerald-50 text-xs h-8 px-2.5 gap-1"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span>Rapor</span>
+                      </Button>
+                    </Link>
+                    <Link href={`/guru/nilai/${s.id}`}>
+                      <Button size="sm" className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs h-8">
+                        Periksa & Nilai
+                      </Button>
+                    </Link>
                     <Button
                       size="icon"
                       variant="ghost"
@@ -752,11 +780,6 @@ export default function TeacherDashboardPage() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                    <Link href={`/guru/nilai/${s.id}`}>
-                      <Button size="sm" className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs h-8">
-                        Periksa & Nilai
-                      </Button>
-                    </Link>
                   </div>
                 </div>
               </Card>

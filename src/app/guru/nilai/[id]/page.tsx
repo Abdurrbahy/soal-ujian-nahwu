@@ -586,7 +586,7 @@ export default function TeacherGradingPage({ params }: { params: Promise<{ id: s
       {/* Floating or Bottom Save Bar */}
       <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 p-4 rounded-xl bg-card border shadow-lg">
         <div className="text-xs text-muted-foreground">
-          Sudah dinilai: <strong className="text-foreground">{gradedManualCount}</strong> dari 29 soal uraian guru
+          Sudah dinilai: <strong className="text-foreground">{gradedManualCount}</strong> dari {manualQuestions.length} soal uraian guru
         </div>
 
         <div className="flex items-center gap-3">

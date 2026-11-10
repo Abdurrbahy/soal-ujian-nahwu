@@ -55,11 +55,11 @@ CREATE TABLE IF NOT EXISTS submissions (
   exam_version TEXT NOT NULL DEFAULT 'miyar-v1.0',
   answers JSONB NOT NULL DEFAULT '{}'::jsonb,
   auto_score INTEGER NOT NULL DEFAULT 0,
-  max_auto_score INTEGER NOT NULL DEFAULT 46,
+  max_auto_score INTEGER NOT NULL DEFAULT 40,
   manual_score INTEGER NOT NULL DEFAULT 0,
-  max_manual_score INTEGER NOT NULL DEFAULT 58,
+  max_manual_score INTEGER NOT NULL DEFAULT 40,
   total_score INTEGER NOT NULL DEFAULT 0,
-  max_total_score INTEGER NOT NULL DEFAULT 104,
+  max_total_score INTEGER NOT NULL DEFAULT 80,
   percentage INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'menunggu_penilaian',
   focus_events JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -75,14 +75,14 @@ CREATE INDEX IF NOT EXISTS idx_submissions_submitted_at ON submissions(submitted
 CREATE TABLE IF NOT EXISTS exam_settings (
   id TEXT PRIMARY KEY DEFAULT 'default',
   duration_minutes INTEGER NOT NULL DEFAULT 90,
-  exam_title TEXT NOT NULL DEFAULT 'Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–26)',
+  exam_title TEXT NOT NULL DEFAULT 'Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–20)',
   target_chapter_min INTEGER NOT NULL DEFAULT 1,
-  target_chapter_max INTEGER NOT NULL DEFAULT 26,
+  target_chapter_max INTEGER NOT NULL DEFAULT 20,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 INSERT INTO exam_settings (id, duration_minutes, exam_title, target_chapter_min, target_chapter_max)
-VALUES ('default', 90, 'Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–26)', 1, 26)
+VALUES ('default', 90, 'Ujian Nahwu Semester: Al-Nahw al-Wadih Juz 2 (Pelajaran 1–20)', 1, 20)
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Row Level Security & Hak Akses

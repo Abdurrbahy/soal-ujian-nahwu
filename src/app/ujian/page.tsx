@@ -420,30 +420,47 @@ export default function ExamPage() {
                 <Info className="w-5 h-5 text-emerald-800" />
                 Ketentuan & Petunjuk Pengerjaan Ujian
               </CardTitle>
+              <CardDescription>
+                Harap membaca dan mematuhi seluruh tata tertib berikut sebelum memulai ujian.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <ul className="list-disc pl-5 space-y-2 text-foreground">
+            <CardContent className="p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
+              <ol className="list-decimal pl-5 space-y-3.5 text-foreground">
                 <li>
-                  <strong>Tepat {QUESTIONS.length} Soal:</strong> Mencakup seluruh 20 pelajaran Al-Nahw al-Wadih Juz 2 (Bab 1–20: Pilihan Ganda, Benar/Salah, Isian Singkat, Klasifikasi, Tashkeel, Transformasi, Koreksi, dan I‘rab).
+                  <strong>Berdoa kepada Allah Ta‘ala:</strong> Luruskan niat semata-mata menuntut ilmu karena Allah, baca basmalah, serta berdoalah memohon kemudahan, ketelitian, dan taufik sebelum mulai menjawab soal.
                 </li>
                 <li>
-                  <strong>Pengerjaan Mandiri & Fleksibel:</strong> Anda dapat mengerjakan soal dengan tenang tanpa batasan timer countdown otomatis. Jawaban berapapun jumlahnya dapat Anda kirimkan kapan saja setelah melakukan konfirmasi.
+                  <strong>Menjaga Kejujuran & Memenuhi Syarat (Hadis):</strong> Wajib menjunjung tinggi sifat amanah dan menaati aturan ujian. Rasulullah ﷺ bersabda:
+                  <div className="my-1.5 p-2 rounded-md bg-muted/50 border border-border/80 flex items-center justify-between gap-3">
+                    <span className="arabic-inline text-base font-bold text-emerald-800 dark:text-emerald-300">
+                      «الْمُؤْمِنُونَ عَلَى شُرُوطِهِمْ»
+                    </span>
+                    <span className="text-xs italic text-muted-foreground">
+                      “Kaum mukminin itu terikat pada syarat-syarat (kesepakatan) mereka.” (HR. Abu Dawud)
+                    </span>
+                  </div>
                 </li>
                 <li>
-                  <strong>Penilaian Seimbang:</strong> Skor objektif (40 butir soal) langsung dihitung otomatis oleh sistem, sedangkan 20 butir soal uraian/tashkeel/i‘rab akan diperiksa dan dinilai langsung oleh guru.
+                  <strong>Dilarang Mencontek & Bekerja Sama:</strong> Dilarang keras membuka buku/catatan materi nahwu, membuka catatan digital, bertanya kepada teman, ataupun meminta bantuan orang lain. Kerjakan murni atas ikhtiar sendiri sebagai bentuk muraqabatullah (merasa senantiasa diawasi Allah).
                 </li>
                 <li>
-                  <strong>Tanda Terima & Bukti Pengiriman:</strong> Setelah selesai, Anda akan menerima nomor resi dan rangkuman jawaban yang dapat disimpan atau dicetak.
+                  <strong>Dilarang Membuka Tab atau Aplikasi Lain:</strong> Selama ujian berlangsung, santri tidak diperkenankan membuka tab baru di peramban (browser), beralih ke aplikasi lain, ataupun meminimalkan jendela ujian.
                 </li>
-              </ul>
+                <li>
+                  <strong>Fitur Pendeteksi Otomatis:</strong> Sistem Mi‘yar dilengkapi teknologi pengawasan digital yang otomatis mencatat durasi ketika Anda berpindah tab/jendela, serta mendeteksi upaya tangkapan layar (screenshot). Seluruh aktivitas ini dicatat dan ditampilkan langsung pada portal guru.
+                </li>
+                <li>
+                  <strong>Ketentuan Soal & Pengiriman:</strong> Ujian terdiri dari {QUESTIONS.length} butir soal (Pelajaran 1–20 Al-Nahw al-Wadih Juz 2). Pengerjaan bersifat mandiri tanpa batasan hitung mundur (countdown), dan lembar jawaban dapat dikirimkan kapan saja setelah Anda memeriksa kembali secara teliti.
+                </li>
+              </ol>
 
-              <div className="p-4 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/30 text-emerald-950 dark:text-emerald-200 text-xs space-y-1.5">
-                <div className="font-semibold flex items-center gap-1.5">
-                  <ShieldAlert className="w-4 h-4 text-emerald-800" />
-                  Kebijakan Integritas & Pencatatan Fokus Layar:
+              <div className="p-4 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-500/30 text-emerald-950 dark:text-emerald-200 text-xs space-y-1.5">
+                <div className="font-semibold flex items-center gap-1.5 text-emerald-900 dark:text-emerald-100">
+                  <ShieldAlert className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
+                  Komitmen Kejujuran & Adab Penuntut Ilmu:
                 </div>
-                <p>
-                  Sistem mencatat waktu ketika tab atau jendela browser Anda diminimalkan atau ditinggalkan. Catatan ini bersifat informatif bagi guru untuk memahami proses pengerjaan. Platform tidak mengunci browser Anda dan tidak mengakses kamera/mikrofon.
+                <p className="leading-relaxed">
+                  Ujian bukan hanya mengukur kecakapan kaidah bahasa Arab, melainkan menguji integritas dan ketakwaan kita. Nilai yang berkah lahir dari kejujuran dan usaha yang diridhai Allah Ta‘ala.
                 </p>
               </div>
             </CardContent>

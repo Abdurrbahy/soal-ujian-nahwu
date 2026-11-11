@@ -15,8 +15,8 @@ export function Footer() {
     <footer className="border-t bg-muted/30 py-8 mt-16 text-sm text-muted-foreground">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
         <div>
-          <p className="font-medium text-foreground">
-            Mi‘yar (مِعْيَار) — Standar Penilaian Nahwu
+          <p className="font-semibold text-foreground">
+            IDN Boarding School Mekkah Madinah — Platform Ujian Nahwu
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             Materi rujukan: <span className="arabic-inline font-medium">النحو الواضح في قواعد اللغة العربية للمرحلة الابتدائية، الجزء الثاني</span> (علي الجارم ومصطفى أمين).

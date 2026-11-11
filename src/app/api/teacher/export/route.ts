@@ -81,7 +81,7 @@ export async function GET(req: Request) {
     // Prepend UTF-8 BOM (\uFEFF) for proper Excel display
     const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
 
-    const filename = `hasil-ujian-nahwu-miyar-${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `hasil-ujian-nahwu-idn-${new Date().toISOString().slice(0, 10)}.csv`;
 
     return new Response(csvContent, {
       status: 200,

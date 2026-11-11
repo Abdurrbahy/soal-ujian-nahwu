@@ -254,23 +254,27 @@ export default function StudentScoreReportPage({
           {/* 1. Official Header / Kop Surat Resmi */}
           <header className="border-b-4 border-double border-slate-800 pb-5 text-center space-y-2">
             <div className="flex items-center justify-between gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-bold text-2xl shadow-sm print:border print:border-slate-800">
-                مِ
+              <div className="flex items-center shrink-0">
+                <img
+                  src="/images/logo-idn.png"
+                  alt="IDN Mekkah Madinah"
+                  className="h-12 sm:h-16 w-auto object-contain"
+                />
               </div>
 
               <div className="flex-1 space-y-1">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-emerald-900 font-sans">
-                  Platform Evaluasi Pembelajaran Bahasa Arab & Nahwu Al-Wadih
+                <h2 className="text-xs font-bold uppercase tracking-wider text-blue-900 font-sans">
+                  IDN BOARDING SCHOOL MEKKAH MADINAH
                 </h2>
-                <h1 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-900 font-serif">
+                <h1 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-900 font-sans">
                   Laporan Hasil Ujian & Nilai Akhir Santri
                 </h1>
                 <p className="text-xs text-slate-600 italic">
-                  Kitab Rujukan: An-Nahw al-Wadih Lil Madaris al-Ibtida&apos;iyyah Juz 2 (Pelajaran 1–20)
+                  Mata Pelajaran: Nahwu (An-Nahw al-Wadih Lil Madaris al-Ibtida&apos;iyyah Juz 2 — Pelajaran 1 s.d. 20)
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-xl border border-slate-300 flex items-center justify-center text-center p-1 text-[10px] font-mono text-slate-600">
+              <div className="w-14 h-12 rounded-xl border border-slate-300 flex items-center justify-center text-center p-1 text-[10px] font-mono text-slate-600 shrink-0">
                 A4 PDF
               </div>
             </div>
@@ -278,7 +282,7 @@ export default function StudentScoreReportPage({
             <div className="text-[11px] text-slate-500 flex items-center justify-center gap-3 pt-1 border-t border-slate-200">
               <span>Tahun Ajaran 1447–1448 H / 2026 M</span>
               <span>•</span>
-              <span>Standar Penilaian Mi‘yar (مِعْيار)</span>
+              <span>IDN Mekkah Madinah</span>
               <span>•</span>
               <span className="font-mono">Resi: {data.id}</span>
             </div>
@@ -539,23 +543,9 @@ export default function StudentScoreReportPage({
 
           {/* 7. Pengesahan & Tanda Tangan */}
           <footer className="pt-8 border-t-2 border-slate-300 text-xs text-slate-800 print:break-inside-avoid space-y-8">
-            <div className="flex justify-between items-start text-center">
-              {/* Kepala Madrasah / Pimpinan */}
-              <div className="space-y-14 w-60">
-                <div>
-                  <p className="text-slate-500">Mengetahui,</p>
-                  <p className="font-bold text-slate-900">Kepala Madrasah / Pimpinan</p>
-                </div>
-                <div className="border-b border-slate-400 pb-1">
-                  <p className="font-bold text-slate-900 underline underline-offset-4">
-                    (......................................................)
-                  </p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">NIP / NIAT. Lembaga</p>
-                </div>
-              </div>
-
-              {/* Tanggal & Guru Penguji */}
-              <div className="space-y-14 w-60">
+            <div className="flex justify-end text-center pr-2 sm:pr-6">
+              {/* TTD Koordinator IDN Mekkah Madinah */}
+              <div className="space-y-16 w-72">
                 <div>
                   <p className="text-slate-500">
                     Diterbitkan pada, {new Date(data.submittedAt).toLocaleDateString("id-ID", {
@@ -564,13 +554,12 @@ export default function StudentScoreReportPage({
                       year: "numeric",
                     })}
                   </p>
-                  <p className="font-bold text-slate-900">Guru Penguji / Pengampu Nahwu</p>
+                  <p className="font-bold text-slate-900 mt-1">Koordinator IDN Mekkah Madinah</p>
                 </div>
-                <div className="border-b border-slate-400 pb-1">
-                  <p className="font-bold text-slate-900 underline underline-offset-4">
-                    (......................................................)
+                <div className="border-b border-slate-700 pb-1">
+                  <p className="font-bold text-slate-900 text-sm">
+                    Abdurrahman Asyam, S.Kom.
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Asatidzah Al-Lughah Al-Arabiyyah</p>
                 </div>
               </div>
             </div>
@@ -578,7 +567,7 @@ export default function StudentScoreReportPage({
             {/* Verification Footer Note */}
             <div className="text-[10px] text-slate-500 text-center border-t border-dashed border-slate-200 pt-3">
               <p>
-                Dokumen ini merupakan Laporan Hasil Ujian digital resmi dari sistem <strong>Mi‘yar (مِعْيار)</strong>. Dokumen sah apabila identitas siswa dan nomor resi terdaftar di pangkalan data evaluasi.
+                Dokumen ini merupakan Laporan Hasil Ujian digital resmi dari <strong>IDN Mekkah Madinah</strong>. Dokumen sah apabila identitas siswa dan nomor resi terdaftar di pangkalan data evaluasi.
               </p>
             </div>
           </footer>

@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 export const TEACHER_CREDENTIALS = {
   // Allowed teacher emails
   allowedEmails: [
+    "guru@idn.sch.id",
+    "ustadz.nahwu@idn.sch.id",
+    "admin@idn.sch.id",
     "guru@miyar.sch.id",
     "ustadz.nahwu@miyar.sch.id",
     "admin@miyar.sch.id"

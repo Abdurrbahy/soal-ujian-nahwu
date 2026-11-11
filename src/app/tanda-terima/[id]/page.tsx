@@ -106,7 +106,7 @@ export default function ReceiptPage({ params }: { params: Promise<{ id: string }
           Tanda Terima Ujian Nahwu
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          Lembar jawaban Anda telah tersimpan secara aman di sistem Mi‘yar.
+          Lembar jawaban Anda telah tersimpan secara aman di sistem IDN Mekkah Madinah.
         </p>
       </div>
 

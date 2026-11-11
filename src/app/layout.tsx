@@ -6,9 +6,9 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Mi‘yar — Platform Ujian Nahwu",
+  title: "IDN Mekkah Madinah — Platform Ujian Nahwu",
   description:
-    "Platform ujian nahwu berbasis web bersumber dari An-Nahw al-Wadih lil-Madaris al-Ibtida'iyyah Juz 2 (Pelajaran 1–20)",
+    "Platform ujian nahwu santri IDN Mekkah Madinah bersumber dari An-Nahw al-Wadih lil-Madaris al-Ibtida'iyyah Juz 2 (Pelajaran 1–20)",
 };
 
 export default function RootLayout({

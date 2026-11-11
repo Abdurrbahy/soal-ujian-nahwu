@@ -755,7 +755,7 @@ function KisiKisiContent() {
             </div>
 
             <div className="text-center text-[10px] text-slate-400 border-t border-slate-200 pt-3">
-              Dokumen Kisi-Kisi & Soal Dihasilkan Otomatis oleh Platform Ujian Nahwu Mi‘yar • Rujukan: Al-Nahw al-Wadih Juz 2
+              Dokumen Kisi-Kisi & Soal Dihasilkan Otomatis oleh Platform Ujian Nahwu IDN Mekkah Madinah • Rujukan: Al-Nahw al-Wadih Juz 2
             </div>
           </footer>
         </div>

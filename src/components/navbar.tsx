@@ -15,29 +15,33 @@ export function Navbar() {
         {/* Brand / Logo */}
         {isExamActive ? (
           <div className="flex items-center space-x-2 sm:space-x-3 select-none cursor-default">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-base sm:text-xl shadow-xs">
-              مِ
-            </div>
-            <div>
-              <span className="font-bold text-base sm:text-lg tracking-tight text-foreground flex items-center gap-1 sm:gap-1.5">
-                Mi‘yar <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium">مِعْيار</span>
+            <img
+              src="/images/logo-idn.png"
+              alt="IDN Mekkah Madinah"
+              className="h-8 sm:h-9 w-auto object-contain"
+            />
+            <div className="hidden xs:block">
+              <span className="font-bold text-sm sm:text-base tracking-tight text-foreground flex items-center gap-1 sm:gap-1.5">
+                IDN <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold">Mekkah Madinah</span>
               </span>
               <p className="text-[11px] text-muted-foreground hidden md:block">
-                Platform Ujian Nahwu Al-Wadih
+                Platform Ujian Nahwu
               </p>
             </div>
           </div>
         ) : (
           <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-xs transition-transform group-hover:scale-105">
-              مِ
-            </div>
+            <img
+              src="/images/logo-idn.png"
+              alt="IDN Mekkah Madinah"
+              className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-105"
+            />
             <div>
-              <span className="font-bold text-base sm:text-lg tracking-tight text-foreground flex items-center gap-1.5">
-                Mi‘yar <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium">مِعْيار</span>
+              <span className="font-bold text-sm sm:text-base tracking-tight text-foreground flex items-center gap-1.5">
+                IDN <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold">Mekkah Madinah</span>
               </span>
-              <p className="text-[11px] text-muted-foreground hidden sm:block">
-                Platform Ujian Nahwu Al-Wadih
+              <p className="text-[11px] text-muted-foreground hidden md:block">
+                Platform Ujian Nahwu
               </p>
             </div>
           </Link>

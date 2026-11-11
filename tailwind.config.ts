@@ -63,7 +63,17 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        sans: [
+          "'Plus Jakarta Sans'",
+          "'Google Sans'",
+          "'Product Sans'",
+          "var(--font-sans)",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "'Segoe UI'",
+          "Roboto",
+          "sans-serif",
+        ],
         arabic: [
           "'Amiri'",
           "'Scheherazade New'",

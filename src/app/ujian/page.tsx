@@ -447,7 +447,7 @@ export default function ExamPage() {
                   <strong>Dilarang Membuka Tab atau Aplikasi Lain:</strong> Selama ujian berlangsung, santri tidak diperkenankan membuka tab baru di peramban (browser), beralih ke aplikasi lain, ataupun meminimalkan jendela ujian.
                 </li>
                 <li>
-                  <strong>Fitur Pendeteksi Otomatis:</strong> Sistem Mi‘yar dilengkapi teknologi pengawasan digital yang otomatis mencatat durasi ketika Anda berpindah tab/jendela, serta mendeteksi upaya tangkapan layar (screenshot). Seluruh aktivitas ini dicatat dan ditampilkan langsung pada portal guru.
+                  <strong>Fitur Pendeteksi Otomatis:</strong> Sistem IDN Mekkah Madinah dilengkapi teknologi pengawasan digital yang otomatis mencatat durasi ketika Anda berpindah tab/jendela, serta mendeteksi upaya tangkapan layar (screenshot). Seluruh aktivitas ini dicatat dan ditampilkan langsung pada portal guru.
                 </li>
                 <li>
                   <strong>Ketentuan Soal & Pengiriman:</strong> Ujian terdiri dari {QUESTIONS.length} butir soal (Pelajaran 1–20 Al-Nahw al-Wadih Juz 2). Pengerjaan bersifat mandiri tanpa batasan hitung mundur (countdown), dan lembar jawaban dapat dikirimkan kapan saja setelah Anda memeriksa kembali secara teliti.
@@ -516,7 +516,7 @@ export default function ExamPage() {
       <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden opacity-[0.035] dark:opacity-[0.05] flex flex-wrap gap-12 p-8 rotate-[-15deg] items-center justify-center">
         {Array.from({ length: 24 }).map((_, i) => (
           <div key={i} className="text-center font-mono text-[11px] font-bold text-foreground tracking-widest whitespace-nowrap">
-            {studentName} • {studentClass} • MI‘YAR NAHWU
+            {studentName} • {studentClass} • IDN MEKKAH MADINAH
           </div>
         ))}
       </div>

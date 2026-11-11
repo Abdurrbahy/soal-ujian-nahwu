@@ -205,7 +205,7 @@ export default function HomePage() {
               Kebijakan Transparansi & Integritas Ujian
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Platform Mi‘yar mencatat peristiwa kehilangan fokus dokumen (seperti berpindah tab atau meminimalkan browser) secara transparan untuk memberikan konteks kepada guru.
+              Platform IDN Mekkah Madinah mencatat peristiwa kehilangan fokus dokumen (seperti berpindah tab atau meminimalkan browser) secara transparan untuk memberikan konteks kepada guru.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground pt-2">
               <div className="flex items-center gap-2">

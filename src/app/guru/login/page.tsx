@@ -35,7 +35,7 @@ export default function TeacherLoginPage() {
         throw new Error(data.error || "Autentikasi gagal.");
       }
 
-      toast.success("Berhasil masuk ke Portal Guru Mi‘yar!");
+      toast.success("Berhasil masuk ke Portal Guru IDN Mekkah Madinah!");
       router.push("/guru/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "PIN atau email tidak valid.");
@@ -51,7 +51,7 @@ export default function TeacherLoginPage() {
           <ShieldCheck className="w-6 h-6" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Portal Guru Mi‘yar
+          Portal Guru IDN Mekkah Madinah
         </h1>
         <p className="text-xs text-muted-foreground">
           Akses terbatas untuk pendidik dan tim penguji nahwu terdaftar.
@@ -84,7 +84,7 @@ export default function TeacherLoginPage() {
                   id="email"
                   type="email"
                   className="pl-9 text-sm"
-                  placeholder="nama@miyar.sch.id"
+                  placeholder="guru@idn.sch.id"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
